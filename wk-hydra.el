@@ -72,6 +72,7 @@
                        (apply-partially
                         #'wk-hydra--hide-show keymap))))
 
+;;;###autoload
 (cl-defmacro wk-hydra-def (&key show-funs hide-funs hide-show-funs
                                 keymap pseudo-mode)
   (let ((keymap-symbol (eval keymap)))
