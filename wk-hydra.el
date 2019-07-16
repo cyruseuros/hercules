@@ -30,7 +30,7 @@
 ;;; Code:
 (require 'which-key)
 
-(declare-function wk-hydra--hide-popup-backup "")
+(declare-function wk-hydra--hide-popup-backup load-file-name)
 (defalias #'wk-hydra--hide-popup-backup
   (indirect-function #'which-key--hide-popup))
 
