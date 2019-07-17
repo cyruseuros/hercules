@@ -73,7 +73,8 @@
                         #'wk-hydra--hide-show keymap))))
 
 ;;;###autoload
-(cl-defmacro wk-hydra-def (&key show-funs hide-funs hide-show-funs
+(cl-defmacro wk-hydra-def (&key hide-show-funs
+                                show-funs hide-funs
                                 keymap pseudo-mode)
   (let ((keymap-symbol (eval keymap)))
     (wk-hydra--show-funs (eval show-funs) keymap-symbol)
@@ -93,7 +94,8 @@
             (defun ,func-symbol ()
               ,func-doc
               (interactive)
-              (set-transient-map ,keymap-symbol t))
+              (set-transient-map ,keymap-symbol t
+                                 #'wk-hydra--hide))
             ',func-symbol)))))
 
 (provide 'wk-hydra)
