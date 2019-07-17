@@ -35,10 +35,14 @@
   (indirect-function #'which-key--hide-popup))
 
 (defun wk-hydra--disable ()
+  (add-hook 'pre-command-hook #'which-key--hide-popup)
   (defalias #'which-key--hide-popup
     #'wk-hydra--hide-popup-backup))
 
 (defun wk-hydra--enable ()
+  (remove-hook 'pre-command-hook #'which-key--hide-popup)
+  ;; Called from helper functions I cannot disable.
+  ;; Necessary for now.
   (defalias #'which-key--hide-popup
     #'ignore))
 
