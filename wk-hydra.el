@@ -61,25 +61,28 @@
 
 (defun wk-hydra--show-funs (funs &optional keymap)
   (cl-loop for fun in funs do
-            (advice-add fun :before
+            (advice-add fun :after
                         (apply-partially
                         #'wk-hydra--show keymap))))
 
 (defun wk-hydra--hide-funs (funs)
   (cl-loop for fun in funs do
-            (advice-add fun :before
+            (advice-add fun :after
                         #'wk-hydra--hide)))
 
 (defun wk-hydra--hide-show-funs (funs &optional keymap)
   (cl-loop for fun in funs do
-           (advice-add fun :before
+           (advice-add fun :after
                        (apply-partially
                         #'wk-hydra--hide-show keymap))))
 
 ;;;###autoload
 (cl-defmacro wk-hydra-def (&key hide-show-funs
-                                show-funs hide-funs
-                                keymap pseudo-mode
+                                show-funs
+                                hide-funs
+                                keymap
+                                pseudo-mode
+                                pseudo-mode-fun
                                 package)
   (let ((keymap-symbol (eval keymap)))
     (wk-hydra--show-funs (eval show-funs) keymap-symbol)
@@ -99,10 +102,9 @@
             (defun ,func-symbol ()
               ,func-doc
               (interactive)
-              ,(when package
-                `(require ,package))
-              (set-transient-map (eval ,keymap-symbol)
-                                  t #'wk-hydra--hide))
+              ,(when pseudo-mode-fun
+                 `(,(eval pseudo-mode-fun)))
+              (set-transient-map ,keymap-symbol t #'wk-hydra--hide))
             ',func-symbol)))))
 
 (provide 'wk-hydra)
