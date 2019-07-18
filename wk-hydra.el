@@ -115,6 +115,9 @@ but name. These include:
 - `windresize'`
 - many more
 
+It can also create PSEUDO-MODEs out of keymaps that are not
+associated with a mode.
+
 Defining a `wk-hydra' of arbitrary size is about as simple as it
 gets. For example, here is my `macrostep' `wk-hydra' with every
 single `macrostep' function on it:
