@@ -1,12 +1,19 @@
 * Overview
 ** Standalone
 =wk-hydra= Lets you call a bunch of related command sequentially with
-no prefix keys. It also shows a handy popup to remember the binding
-for those commands.
+no prefix keys. It also shows a handy popup to remember the bindings
+for those commands. Here's what that looks like:
+
+[[./wk-hydra.gif]]
+
 ** Relative to Other Packages
 =wk-hydra= implements the functionality of
-[[https://github.com/abo-abo/hydra][hydra]], with the auto-magic of
-[[https://github.com/justbur/emacs-which-key][which-key]].
+[[https://github.com/abo-abo/hydra][hydra]] by leveraging
+[[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
+
+It saves you time by relying on work that has already been done for
+you, and provides a consistent interface for all your keybinding popup
+needs (the same =which-key= UI throughout your config).
 
 Allow me to illustrate my point from the READMEs of both projects.
 
@@ -72,8 +79,8 @@ allows you to:
 #+END_SRC
 
 *** Wk-Hydra Setup
-/This is the equivalent of hydra's for buffer setup applied to
-windows, since I don't really use =Buffer-menu=./
+/This is the equivalent of hydra's =Buffer-menu= setup applied to
+window manipulation, since I don't really use =Buffer-menu=./
 #+BEGIN_SRC emacs-lisp :tangle yes
   (wk-hydra-def
    :show-funs '(windresize windresize-help)
@@ -127,7 +134,7 @@ seconds:
 
 * Interface
 
-Unlike a traditional hydra, a `wk-hydra's entry and exit points are
+Unlike a regular hydra, a `wk-hydra's entry and exit points are
 associated with functions, not keys.  Its keys on the other hand are
 defined by traditional keymaps, which you can tweak to your liking
 using your tool of choice. I highly recommend
