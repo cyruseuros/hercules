@@ -1,27 +1,103 @@
-Unlike a traditional hydra, a `wk-hydra's entry and exit points
-are associated with functions, not keys.  Its keys on the other
-hand are defined by traditional, preexisting keymaps, which you
-can tweak to your liking using your tool of choice. I highly
-recommend
-[[https://github.com/noctuid/general.el][general.el]]. `wk-hydra'
-was written to avoid reinventing the wheel by creating elaborate
-hydras for tried and true interfaces that already had them in all
-but name. These include:
+* Overview
+** Standalone
+=wk-hydra= Lets you call a bunch of related command sequentially with
+no prefix keys. It also shows a handy popup to remember the binding
+for those commands.
+** Relative to Other Packages
+=wk-hydra= implements the functionality of
+[[https://github.com/abo-abo/hydra][hydra]], with the auto-magic of
+[[https://github.com/justbur/emacs-which-key][which-key]].
 
-- `macrostep-mode'
-- `edebug-mode'
-- `debugger-mode'
-- `org-babel-*'`
-- `windresize'`
+Allow me to illustrate my point from the READMEs of both projects.
+
+*** Hydra Functionality
+#+BEGIN_QUOTE
+This is a package for GNU Emacs that can be used to tie related
+commands into a family of short bindings with a common prefix --- a
+Hydra.
+
+[...]
+
+Imagine that you have bound =C-c j= and =C-c k= in your config.  You
+want to call =C-c j= and =C-c k= in some (arbitrary) sequence. Hydra
+allows you to:
+
+- Bind your functions in a way that pressing =C-c jjkk3j5k= is
+  equivalent to pressing =C-c j C-c j C-c k C-c k M-3 C-c j M-5 C-c
+  k=. Any key other than =j= or =k= exits this state.
+
+- Assign a custom hint to this group of functions, so that you know
+  immediately after pressing =C-c= that you can follow up with =j= or
+  =k=.
+#+END_QUOTE
+
+*** Hydra Setup
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defhydra hydra-buffer-menu (:color pink
+                               :hint nil)
+    "
+  ^Mark^             ^Unmark^           ^Actions^          ^Search
+  ^^^^^^^^-----------------------------------------------------------------
+  _m_: mark          _u_: unmark        _x_: execute       _R_: re-isearch
+  _s_: save          _U_: unmark up     _b_: bury          _I_: isearch
+  _d_: delete        ^ ^                _g_: refresh       _O_: multi-occur
+  _D_: delete up     ^ ^                _T_: files only: % -28`Buffer-menu-files-only
+  _~_: modified
+  "
+    ("m" Buffer-menu-mark)
+    ("u" Buffer-menu-unmark)
+    ("U" Buffer-menu-backup-unmark)
+    ("d" Buffer-menu-delete)
+    ("D" Buffer-menu-delete-backwards)
+    ("s" Buffer-menu-save)
+    ("~" Buffer-menu-not-modified)
+    ("x" Buffer-menu-execute)
+    ("b" Buffer-menu-bury)
+    ("g" revert-buffer)
+    ("T" Buffer-menu-toggle-files-only)
+    ("O" Buffer-menu-multi-occur :color blue)
+    ("I" Buffer-menu-isearch-buffers :color blue)
+    ("R" Buffer-menu-isearch-buffers-regexp :color blue)
+    ("c" nil "cancel")
+    ("v" Buffer-menu-select "select" :color blue)
+    ("o" Buffer-menu-other-window "other-window" :color blue)
+    ("q" quit-window "quit" :color blue))
+
+  (define-key Buffer-menu-mode-map "." 'hydra-buffer-menu/body)
+#+END_SRC
+
+*** Which-Key Setup
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (which-key-mode)
+#+END_SRC
+
+*** Wk-Hydra Setup
+/This is the equivalent of hydra's for buffer setup applied to
+windows, since I don't really use =Buffer-menu=./
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (wk-hydra-def
+   :show-funs '(windresize windresize-help)
+   :hide-funs '(windresize-exit windresize-cancel-and-quit)
+   :keymap 'windresize-map
+   :pseudo-mode t
+   :pseudo-mode-fun #'windresize)
+#+END_SRC
+
+* Motivation 
+
+I initially wrote =wk-hydra= to avoid reinventing the wheel by
+creating elaborate hydras for minor-modes that already worked like
+they had them, merely lacking the handy popup. These include:
+
+- =macrostep-mode=
+- =edebug-mode=
+- =debugger-mode=
+- =windresize=
 - many more
   
-It can also create PSEUDO-MODEs out of keymaps that are not
-associated with a mode.
-
-
-Defining a `wk-hydra' of arbitrary size is about as simple as it
-gets. For example, here is my `macrostep' `wk-hydra' with every
-single `macrostep' function on it:
+Defining a =wk-hydra= of arbitrary size is about as simple as it
+gets. For example, here is my =macrostep-mode= hydra with every single
+macrostep function in it:
 
 #+BEGIN_SRC emacs-lisp
   (wk-hydra-def
@@ -31,29 +107,72 @@ single `macrostep' function on it:
    :pseudo-mode-fun #'macrostep-mode)
 #+END_SRC
 
-In that context, the following arguments are obvious:
+But `wk-hydra' can create a hydra out of any keymap you have lying
+around. It can also associate it with an arbitrary function on
+entry. You might recognize this description --- It creates a
+pseudo-mode with a cheat-sheet thrown in for good measure. For
+example, you can steal =org-babel-map= and whip up your hydra in
+seconds:
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (wk-hydra-def
+   :show-funs '(org-babel-next-src-block
+                org-babel-previous-src-block)
+   ;; or whatever function you usually end up being
+   ;; done with babel after
+   :hide-funs '(org-babel-tangle-publish)
+   :keymap 'org-babel-map
+   :pseudo-mode t)
+#+END_SRC
+
+* Interface
+
+Unlike a traditional hydra, a `wk-hydra's entry and exit points are
+associated with functions, not keys.  Its keys on the other hand are
+defined by traditional keymaps, which you can tweak to your liking
+using your tool of choice. I highly recommend
+[[https://github.com/noctuid/general.el][general.el]].
+
+The only userland macro you should concern yourself with is
+=wk-hydra-def=.
+
+** Arguments
+
+The following arguments define entry and exit point functions for a
+`wk-hydra':
 - TOGGLE-FUNS :: Processed with `wk-hydra--toggle-funs'.
 - SHOW-FUNS :: Processed with `wk-hydra--show-funs'.
 - HIDE-FUNS :: Processed with `wk-hydra--hide-funs'.
 
 Now to the slightly less obvious ones:
 
-- KEYMAP :: The keymap to display in `wk-hydra'. If it is nil, it
-  is assumed that the function you are calling will result in a
-  `which-key--show-popup' call. This might be desirable if you
-  wish to enable `wk-hydra' for `which-key-show-top-level' or
-  something similar.
+- KEYMAP :: The keymap to display in `wk-hydra'. If it is nil, it is
+  assumed that the function you are calling will result in a
+  `which-key--show-popup' call. This might be desirable if you wish to
+  enable `wk-hydra' for `which-key-show-top-level' or something
+  similar. For example, this is what I have in my config so I can
+  scroll to the `which-key' page of interest when I'm dealing with
+  some fringe Evil commands I kind of forgot. Then I keep it around
+  until I feel comfortable enough to kill it with
+  `keyboard-quit'. This has the side effect of killing all `wk-hydra's
+  on `keyboard-quit', but then again all commands are supposed to obey
+  it.
+  
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (wk-hydra-def
+    :show-funs '(which-key-show-top-level)
+    :hide-funs '(keyboard-quit keyboard-escape-quit))
+ #+END_SRC 
 
-- PSEUDO-MODE :: Whether to create a pseudo-mode by setting an
-  KEYMAP as an overriding transient keymap. This is handy if the
-  function you are binding `wk-hydra' to isn't actually a mode,
-  or is fighting for keybindings with other minor-modes. The
-  keymap stops taking precedent over other keymaps once a key
-  outside of it is pressed. See `set-transient-map' for
-  details. In order to take advantage of this capability, it
-  isn't enough to just call `wk-hydra-def'. You should bind it's
-  return value \(a symbol\) to the key you plan to use to enter
-  the PSEUDO-MODE. E.g.:
+- PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
+  as an overriding transient map. This is handy if the function you
+  are binding `wk-hydra' to isn't actually a mode, or is fighting for
+  keybindings with other minor-modes. The keymap stops taking
+  precedence over other keymaps once a key outside of it is
+  pressed. See `set-transient-map' for details. To take advantage of
+  this capability, it isn't enough to call `wk-hydra-def'. You should
+  bind its return value (a symbol) to the key you plan to use to
+  enter the PSEUDO-MODE. E.g.:
 
 #+BEGIN_SRC emacs-lisp
   (my:elisp::general-def
@@ -67,7 +186,9 @@ Now to the slightly less obvious ones:
     "mc" #'macrostep-collapse
     "mn" #'macrostep-next-macro
     "mp" #'macrostep-prev-macro)
-
 #+END_SRC
  
-- PSEUDO-MODE-FUN :: The command to create a PSEUDO-MODE out of.
+- PSEUDO-MODE-FUN :: The command to call when entering
+  PSEUDO-MODE. Useful when the function in question is an actual
+  mode. You can omit it if you just want to set up the hydra without
+  actually doing anything right away.
