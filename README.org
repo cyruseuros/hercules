@@ -15,7 +15,7 @@ It saves you time by relying on work that has already been done for
 you, and provides a consistent interface for all your keybinding popup
 needs (the same =which-key= UI throughout your config).
 
-Allow me to illustrate my point from the READMEs of both projects.
+Allow me to illustrate my point from the READMEs of both projects:
 
 *** Hydra Functionality
 #+BEGIN_QUOTE
@@ -79,8 +79,9 @@ allows you to:
 #+END_SRC
 
 *** Wk-Hydra Setup
-/This is the equivalent of hydra's =Buffer-menu= setup applied to
-window manipulation, since I don't really use =Buffer-menu=./
+
+/This is the equivalent of hydra's buffer setup applied to
+window manipulation, since I don't really use buffer-menu./
 #+BEGIN_SRC emacs-lisp :tangle yes
   (wk-hydra-def
    :show-funs '(windresize windresize-help)
@@ -146,23 +147,23 @@ The only userland macro you should concern yourself with is
 ** Arguments
 
 The following arguments define entry and exit point functions for a
-`wk-hydra':
-- TOGGLE-FUNS :: Processed with `wk-hydra--toggle-funs'.
-- SHOW-FUNS :: Processed with `wk-hydra--show-funs'.
-- HIDE-FUNS :: Processed with `wk-hydra--hide-funs'.
+=wk-hydra=:
+- TOGGLE-FUNS :: Processed with =wk-hydra--toggle-funs=.
+- SHOW-FUNS :: Processed with =wk-hydra--show-funs=.
+- HIDE-FUNS :: Processed with =wk-hydra--hide-funs=.
 
 Now to the slightly less obvious ones:
 
-- KEYMAP :: The keymap to display in `wk-hydra'. If it is nil, it is
+- KEYMAP :: The keymap to display in =wk-hydra=. If it is nil, it is
   assumed that the function you are calling will result in a
-  `which-key--show-popup' call. This might be desirable if you wish to
-  enable `wk-hydra' for `which-key-show-top-level' or something
+  =which-key--show-popup= call. This might be desirable if you wish to
+  enable =wk-hydra= for =which-key-show-top-level= or something
   similar. For example, this is what I have in my config so I can
-  scroll to the `which-key' page of interest when I'm dealing with
+  scroll to the =which-key= page of interest when I=m dealing with
   some fringe Evil commands I kind of forgot. Then I keep it around
   until I feel comfortable enough to kill it with
-  `keyboard-quit'. This has the side effect of killing all `wk-hydra's
-  on `keyboard-quit', but then again all commands are supposed to obey
+  =keyboard-quit=. This has the side effect of killing any =wk-hydra=
+  on =keyboard-quit=, but then again all commands are supposed to obey
   it.
   
  #+BEGIN_SRC emacs-lisp :tangle yes
@@ -173,13 +174,13 @@ Now to the slightly less obvious ones:
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
   as an overriding transient map. This is handy if the function you
-  are binding `wk-hydra' to isn't actually a mode, or is fighting for
+  are binding =wk-hydra= to isn't actually a mode, or is fighting for
   keybindings with other minor-modes. The keymap stops taking
   precedence over other keymaps once a key outside of it is
-  pressed. See `set-transient-map' for details. To take advantage of
-  this capability, it isn't enough to call `wk-hydra-def'. You should
-  bind its return value (a symbol) to the key you plan to use to
-  enter the PSEUDO-MODE. E.g.:
+  pressed. See =set-transient-map= for details. To take advantage of
+  this capability, it isn't enough to call =wk-hydra-def=. You should
+  bind its return value (a symbol) to the key you plan to use to enter
+  the PSEUDO-MODE. E.g.:
 
 #+BEGIN_SRC emacs-lisp
   (my:elisp::general-def
