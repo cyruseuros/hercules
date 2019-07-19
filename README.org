@@ -1,8 +1,18 @@
 * Overview
 ** Standalone
-=wk-hydra= Lets you call a bunch of related command sequentially with
-no prefix keys. It also shows a handy popup to remember the bindings
-for those commands. Here's what that looks like:
+In at most 7 lines of set-up code, =wk-hydra= lets you call any group
+of related command sequentially with no prefix keys, while showing a
+handy popup to remember the bindings for those commands. It can create
+both of these (the grouped commands, and the popup) from any
+keymap. Here's what that looks like:
+
+#+BEGIN_SRC emacs-lisp
+  (wk-hydra-def
+   :toggle-funs '(macrostep-mode)
+   :keymap 'macrostep-keymap
+   :pseudo-mode t
+   :pseudo-mode-fun #'macrostep-mode)
+#+END_SRC
 
 [[./wk-hydra.gif]]
 
@@ -103,18 +113,6 @@ they had them, merely lacking the handy popup. These include:
 - =windresize=
 - many more
   
-Defining a =wk-hydra= of arbitrary size is about as simple as it
-gets. For example, here is my =macrostep-mode= hydra with every single
-macrostep function in it:
-
-#+BEGIN_SRC emacs-lisp
-  (wk-hydra-def
-   :toggle-funs '(macrostep-mode)
-   :keymap 'macrostep-keymap
-   :pseudo-mode t
-   :pseudo-mode-fun #'macrostep-mode)
-#+END_SRC
-
 But `wk-hydra' can create a hydra out of any keymap you have lying
 around. It can also associate it with an arbitrary function on
 entry. You might recognize this description --- It creates a
