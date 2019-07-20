@@ -133,6 +133,15 @@ invoke =hercules= (both lists and single functions work):
 - SHOW-FUNS :: Processed with =hercules--show-funs=.
 - HIDE-FUNS :: Processed with =hercules--hide-funs=.
 
+The following mutually exclusive arguments provide a shorthand
+for whittling down `hercules' pop-ups if you don't want to get
+your hands dirty with keymaps and prefer a more minimal UI (both
+lists and single keys/functions work):
+- BLACKLIST-KEYS :: Processed with =hercules--blacklist-keys=
+- WHITELIST-KEYS :: Processed with =hercules--whitelist-keys=
+- BLACKLIST-FUNS :: Processed with =hercules--graylist-funs=
+- WHITELIST-FUNS :: Processed with =hercules--graylist-funs=
+
 Now to the slightly less obvious options:
 
 - KEYMAP :: The keymap to display in =hercules=. If it is nil, it is
@@ -140,7 +149,7 @@ Now to the slightly less obvious options:
   =which-key--show-popup= call. This might be desirable if you wish to
   enable =hercules= for =which-key-show-top-level= or something
   similar. For example, this is what I have in my config so I can
-  scroll to the =which-key= page of interest when I=m dealing with
+  scroll to the =which-key= page of interest when I'm dealing with
   some fringe Evil commands I kind of forgot. Then I keep it around
   until I feel comfortable enough to kill it with
   =keyboard-quit=. This has the side effect of killing any =hercules=
@@ -152,6 +161,11 @@ Now to the slightly less obvious options:
     :show-funs '(which-key-show-top-level)
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC 
+ 
+- PACKAGE :: If you are using any of BLACKLIST-KEYS, WHITELIST-KEYS,
+  BLACKLIST-FUNS, or WHITELIST-FUNS, and the KEYMAP you're dealing is
+  in a lazy-loaded package, you must also specify the package it
+  belongs to as a quotes symbol using this argument.
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
   as an overriding transient map. This is handy if the function you

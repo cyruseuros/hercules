@@ -7,7 +7,7 @@
 ;;
 ;; Version: 0.1
 ;; Keywords: faces
-;; Package-Requires: ((emacs "24.4") (which-key "3.0.0"))
+;; Package-Requires: ((emacs "24.4") (which-key))
 
 ;; This program is free software: you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
@@ -109,27 +109,32 @@ disabled."
 (defun hercules--blacklist-keys (keys keymap)
   "Unbind KEYS from KEYMAP.
 KEYS will be parsed by `bind-key'."
-  (cl-loop for key in (hercules--enlist keys) do
-           (define-key keymap key nil)))
+  (let ((keymap (eval keymap))
+        (keys (eval keys)))
+    (cl-loop for key in (hercules--enlist keys) do
+             (define-key keymap key nil))))
 
 (defun hercules--whitelist-keys (keys keymap)
   "Unbind all keys except KEYS from KEYMAP.
 KEYS will be parsed by `bind-key'."
-  (cl-loop for (key . fun)
-           in (which-key--get-keymap-bindings (eval keymap))
-           do (when (not (member key (hercules--enlist keys)))
-                (define-key keymap key nil))))
+  (let ((keymap (eval keymap))
+        (keys (eval keys)))
+    (cl-loop for (key . fun)
+             in (which-key--get-keymap-bindings keymap) do
+             (when (not (member key (hercules--enlist keys)))
+               (define-key keymap key nil)))))
 
 (defun hercules--graylist-funs (funs keymap &optional whitelist)
   "Unbind keys (not) associated with FUNS from KEYMAP.
 The \"not\" applies when WHITELIST is t."
-  (cl-loop for (key . fun)
-           in (which-key--get-keymap-bindings (eval keymap))
-           do (when (if whitelist
-                        (not (member (intern fun) (hercules--enlist funs)))
-                      (member (intern fun) (hercules--enlist funs)))
-                (define-key keymap key nil))))
-
+  (let ((keymap (eval keymap))
+        (funs (eval funs)))
+    (cl-loop for (key . fun)
+             in (which-key--get-keymap-bindings keymap) do
+             (when (if whitelist
+                       (not (member (intern fun) (hercules--enlist funs)))
+                     (member (intern fun) (hercules--enlist funs)))
+               (define-key keymap key nil)))))
 
 ;;;###autoload
 (cl-defmacro hercules-def (&key toggle-funs
@@ -159,6 +164,17 @@ that invoke `hercules' (both lists and single functions work):
 - SHOW-FUNS :: Processed with `hercules--show-funs'.
 - HIDE-FUNS :: Processed with `hercules--hide-funs'.
 
+The following mutually exclusive arguments provide a shorthand
+for whittling down `hercules' pop-ups if you don't want to get
+your hands dirty with keymaps and prefer a more minimal UI (both
+lists and single keys/functions work):
+
+- BLACKLIST-KEYS :: Processed with `hercules--blacklist-keys'
+- WHITELIST-KEYS :: Processed with `hercules--whitelist-keys'
+- BLACKLIST-FUNS :: Processed with `hercules--graylist-funs'
+- WHITELIST-FUNS :: Processed with `hercules--graylist-funs'
+
+
 Now to the slightly less obvious options:
 
 - KEYMAP :: The keymap to display in `hercules'. If it is nil, it is
@@ -178,6 +194,12 @@ Now to the slightly less obvious options:
     :show-funs '(which-key-show-top-level)
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC
+
+- PACKAGE :: If you are using any of BLACKLIST-KEYS,
+  WHITELIST-KEYS, BLACKLIST-FUNS, or WHITELIST-FUNS, and the
+  KEYMAP you're dealing is in a lazy-loaded package, you must
+  also specify the package it belongs to as a quotes symbol using
+  this argument.
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a
   KEYMAP as an overriding transient map. This is handy if the
@@ -211,15 +233,18 @@ Now to the slightly less obvious options:
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
     (hercules--toggle-funs (eval toggle-funs))
-    (if package
-        (with-eval-after-load (eval package)
-          (when (bound-and-true-p keymap-symbol)
+    (when (and keymap
+               (or blacklist-keys
+                   whitelist-keys
+                   blacklist-funs
+                   whitelist-funs))
+      (if package
+          (with-eval-after-load (eval package)
             (hercules--blacklist-keys blacklist-keys keymap-symbol)
             (hercules--whitelist-keys whitelist-keys keymap-symbol)
             (hercules--graylist-funs blacklist-funs keymap-symbol)
             (hercules--graylist-funs whitelist-funs keymap-symbol
-                                     t)))
-      (when (bound-and-true-p keymap-symbol)
+                                     t))
         (hercules--blacklist-keys blacklist-keys keymap-symbol)
         (hercules--whitelist-keys whitelist-keys keymap-symbol)
         (hercules--graylist-funs blacklist-funs keymap-symbol)
