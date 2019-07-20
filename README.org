@@ -1,52 +1,47 @@
+[[./hercules.png]]
+
+An auto-magical, =which-key= based =hydra= banisher.
+
 * Overview
 ** Standalone
-In at most 7 lines of set-up code, =wk-hydra= lets you call any group
+In at most 7 lines of set-up code, =hercules= lets you call any group
 of related command sequentially with no prefix keys, while showing a
 handy popup to remember the bindings for those commands. It can create
 both of these (the grouped commands, and the popup) from any
 keymap. Here's what that looks like:
 
 #+BEGIN_SRC emacs-lisp
-  (wk-hydra-def
+  (hercules-def
    :toggle-funs '(macrostep-mode)
    :keymap 'macrostep-keymap
    :pseudo-mode t
    :pseudo-mode-fun #'macrostep-mode)
 #+END_SRC
 
-[[./wk-hydra.gif]]
+[[./hercules.gif]]
 
 ** Relative to Other Packages
-=wk-hydra= implements the functionality of
+If only there was a way to make a =hydra= without having to list all
+the bindings explicitly... Kind of like =which-key=...
+
+=hercules= implements the functionality of
 [[https://github.com/abo-abo/hydra][hydra]] by leveraging
 [[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
 
-It saves you time by relying on work that has already been done for
-you, and provides a consistent interface for all your keybinding popup
-needs (the same =which-key= UI throughout your config).
+Unlike =hydra=, =hercules= entry and exit points are associated with
+functions, not keys.  Its keys on the other hand are defined by
+traditional keymaps, which you can use as-is, or tweak to your liking
+using your tool of choice. =hercules= doesn't force this choice on
+you. That said, I highly recommend
+[[https://github.com/noctuid/general.el][general.el]].
 
-Allow me to illustrate my point from the READMEs of both projects:
+Ultimately, =hercules= saves you time by relying on work that has
+already been done for you --- usually, but not necessarily, as part of
+a time-tested minor-mode. The resulting interfaces tend to be more
+comprehensive than home-grown =hydras=, thus aiding you in
+discovering new functionality.
 
-*** Hydra Functionality
-#+BEGIN_QUOTE
-This is a package for GNU Emacs that can be used to tie related
-commands into a family of short bindings with a common prefix --- a
-Hydra.
-
-[...]
-
-Imagine that you have bound =C-c j= and =C-c k= in your config.  You
-want to call =C-c j= and =C-c k= in some (arbitrary) sequence. Hydra
-allows you to:
-
-- Bind your functions in a way that pressing =C-c jjkk3j5k= is
-  equivalent to pressing =C-c j C-c j C-c k C-c k M-3 C-c j M-5 C-c
-  k=. Any key other than =j= or =k= exits this state.
-
-- Assign a custom hint to this group of functions, so that you know
-  immediately after pressing =C-c= that you can follow up with =j= or
-  =k=.
-#+END_QUOTE
+Allow me to illustrate my point using an example from =hydras= README:
 
 *** Hydra Setup
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -83,17 +78,12 @@ allows you to:
   (define-key Buffer-menu-mode-map "." 'hydra-buffer-menu/body)
 #+END_SRC
 
-*** Which-Key Setup
+*** Hercules Setup
+NOTE: This is the equivalent of hydra's buffer setup applied to window
+manipulation, since I don't use buffer-menu. Implementing it yourself
+should be trivial.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (which-key-mode)
-#+END_SRC
-
-*** Wk-Hydra Setup
-
-/This is the equivalent of hydra's buffer setup applied to
-window manipulation, since I don't really use buffer-menu./
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (wk-hydra-def
+  (hercules-def
    :show-funs '(windresize windresize-help)
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
    :keymap 'windresize-map
@@ -101,11 +91,15 @@ window manipulation, since I don't really use buffer-menu./
    :pseudo-mode-fun #'windresize)
 #+END_SRC
 
-* Motivation 
+** Bonus
+Last, and definitely least, =hercules= provides a more consistent
+interface for all your keybinding popup needs (the same =which-key= UI
+throughout your config).
 
-I initially wrote =wk-hydra= to avoid reinventing the wheel by
-creating elaborate hydras for minor-modes that already worked like
-they had them, merely lacking the handy popup. These include:
+* Motivation 
+As mentioned, I initially wrote =hercules= to avoid reinventing the
+wheel by creating elaborate hydras for minor-modes that already worked
+like they had them, merely lacking the handy popup. These include:
 
 - =macrostep-mode=
 - =edebug-mode=
@@ -113,15 +107,14 @@ they had them, merely lacking the handy popup. These include:
 - =windresize=
 - many more
   
-But `wk-hydra' can create a hydra out of any keymap you have lying
-around. It can also associate it with an arbitrary function on
-entry. You might recognize this description --- It creates a
-pseudo-mode with a cheat-sheet thrown in for good measure. For
-example, you can steal =org-babel-map= and whip up your hydra in
-seconds:
+But =hercules= can use any keymap you have lying around. It can also
+associate it with an arbitrary function on entry. You might recognize
+this description --- It creates a pseudo-mode with a cheat-sheet
+thrown in for good measure. For example, you can steal =org-babel-map=
+and whip up what used to be a massive =hydra= in seconds:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (wk-hydra-def
+  (hercules-def
    :show-funs '(org-babel-next-src-block
                 org-babel-previous-src-block)
    ;; or whatever function you usually end up being
@@ -132,58 +125,50 @@ seconds:
 #+END_SRC
 
 * Interface
-
-Unlike a regular hydra, a `wk-hydra's entry and exit points are
-associated with functions, not keys.  Its keys on the other hand are
-defined by traditional keymaps, which you can tweak to your liking
-using your tool of choice. I highly recommend
-[[https://github.com/noctuid/general.el][general.el]].
-
 The only userland macro you should concern yourself with is
-=wk-hydra-def=.
+=hercules-def=.
 
 ** Arguments
-
 The following arguments define entry and exit point functions for a
-=wk-hydra=:
-- TOGGLE-FUNS :: Processed with =wk-hydra--toggle-funs=.
-- SHOW-FUNS :: Processed with =wk-hydra--show-funs=.
-- HIDE-FUNS :: Processed with =wk-hydra--hide-funs=.
+=hercules=:
+- TOGGLE-FUNS :: Processed with =hercules--toggle-funs=.
+- SHOW-FUNS :: Processed with =hercules--show-funs=.
+- HIDE-FUNS :: Processed with =hercules--hide-funs=.
 
 Now to the slightly less obvious ones:
 
-- KEYMAP :: The keymap to display in =wk-hydra=. If it is nil, it is
+- KEYMAP :: The keymap to display in =hercules=. If it is nil, it is
   assumed that the function you are calling will result in a
   =which-key--show-popup= call. This might be desirable if you wish to
-  enable =wk-hydra= for =which-key-show-top-level= or something
+  enable =hercules= for =which-key-show-top-level= or something
   similar. For example, this is what I have in my config so I can
   scroll to the =which-key= page of interest when I=m dealing with
   some fringe Evil commands I kind of forgot. Then I keep it around
   until I feel comfortable enough to kill it with
-  =keyboard-quit=. This has the side effect of killing any =wk-hydra=
+  =keyboard-quit=. This has the side effect of killing any =hercules=
   on =keyboard-quit=, but then again all commands are supposed to obey
   it.
   
  #+BEGIN_SRC emacs-lisp :tangle yes
-   (wk-hydra-def
+   (hercules-def
     :show-funs '(which-key-show-top-level)
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC 
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
   as an overriding transient map. This is handy if the function you
-  are binding =wk-hydra= to isn't actually a mode, or is fighting for
+  are binding =hercules= to isn't actually a mode, or is fighting for
   keybindings with other minor-modes. The keymap stops taking
   precedence over other keymaps once a key outside of it is
   pressed. See =set-transient-map= for details. To take advantage of
-  this capability, it isn't enough to call =wk-hydra-def=. You should
+  this capability, it isn't enough to call =hercules-def=. You should
   bind its return value (a symbol) to the key you plan to use to enter
   the PSEUDO-MODE. E.g.:
 
 #+BEGIN_SRC emacs-lisp
   (my:elisp::general-def
     "m" '(:ignore t :wk "macrostep")
-    "m." (wk-hydra-def
+    "m." (hercules-def
           :toggle-funs '(macrostep-mode)
           :keymap 'macrostep-keymap
           :pseudo-mode t
@@ -195,6 +180,5 @@ Now to the slightly less obvious ones:
 #+END_SRC
  
 - PSEUDO-MODE-FUN :: The command to call when entering
-  PSEUDO-MODE. Useful when the function in question is an actual
-  mode. You can omit it if you just want to set up the hydra without
-  actually doing anything right away.
+  PSEUDO-MODE. You can omit it if you just want to set up =hercules=
+  without actually doing anything right away.
