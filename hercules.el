@@ -120,7 +120,7 @@ KEYS will be parsed by `bind-key'."
   (let ((keymap (eval keymap))
         (keys (eval keys)))
     (cl-loop for (key . fun)
-             in (which-key--get-keymap-bindings keymap) do
+             in (which-key--get-keymap-bindings keymap t) do
              (when (not (member key (hercules--enlist keys)))
                (define-key keymap key nil)))))
 
@@ -130,7 +130,7 @@ The \"not\" applies when WHITELIST is t."
   (let ((keymap (eval keymap))
         (funs (eval funs)))
     (cl-loop for (key . fun)
-             in (which-key--get-keymap-bindings keymap) do
+             in (which-key--get-keymap-bindings keymap t) do
              (when (if whitelist
                        (not (member (intern fun) (hercules--enlist funs)))
                      (member (intern fun) (hercules--enlist funs)))
