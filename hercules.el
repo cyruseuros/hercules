@@ -76,22 +76,27 @@ disabled."
       (hercules--hide)
     (hercules--show keymap)))
 
+(defun hercules---enlist (exp)
+  "Return EXP wrapped in a list, or as-is if already a list."
+  (declare (pure t) (side-effect-free t))
+  (if (listp exp) exp (list exp)))
+
 (defun hercules--show-funs (funs &optional keymap)
   "Show `hercules' showing KEYMAP when FUNS are called."
-  (cl-loop for fun in funs do
+  (cl-loop for fun in (hercules---enlist funs) do
             (advice-add fun :after
                         (apply-partially
                         #'hercules--show keymap))))
 
 (defun hercules--hide-funs (funs)
   "Hide `hercules' when FUNS are called."
-  (cl-loop for fun in funs do
+  (cl-loop for fun in (hercules---enlist funs) do
             (advice-add fun :after
                         #'hercules--hide)))
 
 (defun hercules--toggle-funs (funs &optional keymap)
   "Toggle `hercules' with KEYMAP when FUNS are called."
-  (cl-loop for fun in funs do
+  (cl-loop for fun in (hercules---enlist funs) do
            (advice-add fun :after
                        (apply-partially
                         #'hercules--toggle keymap))))
