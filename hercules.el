@@ -177,7 +177,7 @@ Now to the slightly less obvious options:
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
     (hercules--toggle-funs (eval toggle-funs))
-    (when pseudo-mode
+    (when (or pseudo-mode pseudo-mode-fun)
       (let* ((keymap-name (symbol-name keymap-symbol))
               (func-symbol (intern
                             (format "hercules-%s-pseudo-mode"

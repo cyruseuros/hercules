@@ -14,7 +14,6 @@ keymap. Here's what that looks like:
   (hercules-def
    :toggle-funs #'macrostep-mode
    :keymap 'macrostep-keymap
-   :pseudo-mode t
    :pseudo-mode-fun #'macrostep-mode)
 #+END_SRC
 
@@ -44,7 +43,7 @@ discovering new functionality.
 Allow me to illustrate my point using an example from =hydras= README:
 
 *** Hydra Setup
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (defhydra hydra-buffer-menu (:color pink
                                :hint nil)
     "
@@ -82,7 +81,7 @@ Allow me to illustrate my point using an example from =hydras= README:
 NOTE: This is the equivalent of hydra's buffer setup applied to window
 manipulation, since I don't use buffer-menu. Implementing it yourself
 should be trivial.
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (hercules-def
    :show-funs '(windresize windresize-help)
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
@@ -112,7 +111,7 @@ this description --- It creates a pseudo-mode with a cheat-sheet
 thrown in for good measure. For example, you can steal =org-babel-map=
 and whip up what used to be a massive =hydra= in seconds:
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp
   (hercules-def
    :show-funs '(org-babel-next-src-block
                 org-babel-previous-src-block)
@@ -148,7 +147,7 @@ Now to the slightly less obvious options:
   on =keyboard-quit=, but then again all commands are supposed to obey
   it.
   
- #+BEGIN_SRC emacs-lisp :tangle yes
+ #+BEGIN_SRC emacs-lisp
    (hercules-def
     :show-funs '(which-key-show-top-level)
     :hide-funs '(keyboard-quit keyboard-escape-quit))
@@ -168,9 +167,8 @@ Now to the slightly less obvious options:
   (my:elisp::general-def
     "m" '(:ignore t :wk "macrostep")
     "m." (hercules-def
-          :toggle-funs '(macrostep-mode)
+          :toggle-funs #'macrostep-mode
           :keymap 'macrostep-keymap
-          :pseudo-mode t
           :pseudo-mode-fun #'macrostep-mode)
     "me" #'macrostep-expand
     "mc" #'macrostep-collapse
