@@ -40,6 +40,9 @@
 (defalias #'hercules--hide-popup-backup
   (indirect-function #'which-key--hide-popup))
 
+(defvar hercules--popup-showing-p nil
+  "Whether or not `hercules' has been summoned.")
+
 (defun hercules--disable ()
   "Re-enable `which-key--hide-popup'.
 Add it to `pre-command-hook', and restore its original function
@@ -61,45 +64,72 @@ disabled."
     #'ignore))
 
 (defun hercules--hide (&rest _)
-  "Hide `hercules'."
+  "Dismiss `hercules'."
+  (setq hercules--popup-showing-p nil)
   (hercules--disable)
   (which-key--hide-popup))
 
 (defun hercules--show (keymap &rest _)
-  "Show `hercules' showing KEYMAP."
+  "Summon `hercules' showing KEYMAP."
+  (setq hercules--popup-showing-p t)
   (hercules--enable)
   (when keymap (which-key-show-keymap keymap)))
 
 (defun hercules--toggle (keymap &rest _)
   "Toggle `hercules' showing KEYMAP."
-  (if (which-key--popup-showing-p)
+  (if hercules--popup-showing-p
       (hercules--hide)
     (hercules--show keymap)))
 
-(defun hercules---enlist (exp)
+(defun hercules--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
 
 (defun hercules--show-funs (funs &optional keymap)
   "Show `hercules' showing KEYMAP when FUNS are called."
-  (cl-loop for fun in (hercules---enlist funs) do
+  (cl-loop for fun in (hercules--enlist funs) do
             (advice-add fun :after
                         (apply-partially
                         #'hercules--show keymap))))
 
 (defun hercules--hide-funs (funs)
   "Hide `hercules' when FUNS are called."
-  (cl-loop for fun in (hercules---enlist funs) do
+  (cl-loop for fun in (hercules--enlist funs) do
             (advice-add fun :after
                         #'hercules--hide)))
 
 (defun hercules--toggle-funs (funs &optional keymap)
   "Toggle `hercules' with KEYMAP when FUNS are called."
-  (cl-loop for fun in (hercules---enlist funs) do
+  (cl-loop for fun in (hercules--enlist funs) do
            (advice-add fun :after
                        (apply-partially
                         #'hercules--toggle keymap))))
+
+(defun hercules--blacklist-keys (keys keymap)
+  "Unbind KEYS from KEYMAP.
+KEYS will be parsed by `bind-key'."
+  (cl-loop for key in (hercules--enlist keys) do
+           (define-key keymap key nil)))
+
+(defun hercules--whitelist-keys (keys keymap)
+  "Unbind all keys except KEYS from KEYMAP.
+KEYS will be parsed by `bind-key'."
+  (cl-loop for (key . fun)
+           in (which-key--get-keymap-bindings (eval keymap))
+           do (when (not (member key (hercules--enlist keys)))
+                (define-key keymap key nil))))
+
+(defun hercules--graylist-funs (funs keymap &optional whitelist)
+  "Unbind keys (not) associated with FUNS from KEYMAP.
+The \"not\" applies when WHITELIST is t."
+  (cl-loop for (key . fun)
+           in (which-key--get-keymap-bindings (eval keymap))
+           do (when (if whitelist
+                        (not (member (intern fun) (hercules--enlist funs)))
+                      (member (intern fun) (hercules--enlist funs)))
+                (define-key keymap key nil))))
+
 
 ;;;###autoload
 (cl-defmacro hercules-def (&key toggle-funs
@@ -107,7 +137,12 @@ disabled."
                                 hide-funs
                                 keymap
                                 pseudo-mode
-                                pseudo-mode-fun)
+                                pseudo-mode-fun
+                                blacklist-keys
+                                whitelist-keys
+                                whitelist-funs
+                                blacklist-funs
+                                package)
   "
 Summon `hercules' to banish your `hydra's.
 
@@ -137,12 +172,12 @@ Now to the slightly less obvious options:
   `keyboard-quit'. This has the side effect of killing all `hercules's
   on `keyboard-quit', but then again all commands are supposed to obey
   it.
-  
+
  #+BEGIN_SRC emacs-lisp :tangle yes
    (hercules-def
     :show-funs '(which-key-show-top-level)
     :hide-funs '(keyboard-quit keyboard-escape-quit))
- #+END_SRC 
+ #+END_SRC
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a
   KEYMAP as an overriding transient map. This is handy if the
@@ -161,14 +196,13 @@ Now to the slightly less obvious options:
     \"m.\" (hercules-def
           :toggle-funs '(macrostep-mode)
           :keymap 'macrostep-keymap
-          :pseudo-mode t
           :pseudo-mode-fun #'macrostep-mode)
     \"me\" #'macrostep-expand
     \"mc\" #'macrostep-collapse
     \"mn\" #'macrostep-next-macro
     \"mp\" #'macrostep-prev-macro)
 #+END_SRC
- 
+
 - PSEUDO-MODE-FUN :: The command to call when entering
   PSEUDO-MODE.  You can omit it if you just want to summon
   `hercules' without actually doing anything right away.
@@ -177,6 +211,20 @@ Now to the slightly less obvious options:
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
     (hercules--toggle-funs (eval toggle-funs))
+    (if package
+        (with-eval-after-load (eval package)
+          (when (bound-and-true-p keymap-symbol)
+            (hercules--blacklist-keys blacklist-keys keymap-symbol)
+            (hercules--whitelist-keys whitelist-keys keymap-symbol)
+            (hercules--graylist-funs blacklist-funs keymap-symbol)
+            (hercules--graylist-funs whitelist-funs keymap-symbol
+                                     t)))
+      (when (bound-and-true-p keymap-symbol)
+        (hercules--blacklist-keys blacklist-keys keymap-symbol)
+        (hercules--whitelist-keys whitelist-keys keymap-symbol)
+        (hercules--graylist-funs blacklist-funs keymap-symbol)
+        (hercules--graylist-funs whitelist-funs keymap-symbol
+                                 t)))
     (when (or pseudo-mode pseudo-mode-fun)
       (let* ((keymap-name (symbol-name keymap-symbol))
               (func-symbol (intern
