@@ -3,11 +3,11 @@
 ;; Copyright (C) 2019 Uros Perisic
 
 ;; Author: Uros Perisic
-;; URL: https://gitlab.com/jjzmajic/wk-hydra
+;; URL: https://gitlab.com/jjzmajic/hercules
 ;;
 ;; Version: 0.1
 ;; Keywords: faces
-;; Package-Requires: ((emacs "24.4")(which-key "3.3.0"))
+;; Package-Requires: ((emacs "24.4") (which-key "3.0.0"))
 
 ;; This program is free software: you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
@@ -108,14 +108,23 @@ disabled."
                                 keymap
                                 pseudo-mode
                                 pseudo-mode-fun)
-  " The following arguments define entry and exit point functions
-for a `hercules':
+  "
+Summon `hercules' to banish your `hydra's.
+
+In at most 7 lines of set-up code, `hercules' lets you call any
+group of related command sequentially with no prefix keys, while
+showing a handy popup to remember the bindings for those
+commands. He can create both of these (the grouped commands, and
+the popup) from any keymap.
+
+The following arguments define entry and exit point functions
+that invoke `hercules' (both lists and single functions work):
 
 - TOGGLE-FUNS :: Processed with `hercules--toggle-funs'.
 - SHOW-FUNS :: Processed with `hercules--show-funs'.
 - HIDE-FUNS :: Processed with `hercules--hide-funs'.
 
-Now to the slightly less obvious ones:
+Now to the slightly less obvious options:
 
 - KEYMAP :: The keymap to display in `hercules'. If it is nil, it is
   assumed that the function you are calling will result in a
@@ -135,13 +144,14 @@ Now to the slightly less obvious ones:
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC 
 
-- PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
-  as an overriding transient map. This is handy if the function you
-  are binding `hercules' to isn't actually a mode, or is fighting for
-  keybindings with other minor-modes. The keymap stops taking
-  precedence over other keymaps once a key outside of it is
-  pressed. See `set-transient-map' for details. To take advantage of
-  this capability, it isn't enough to call `hercules-def'. You should
+- PSEUDO-MODE :: Whether to create a pseudo-mode by setting a
+  KEYMAP as an overriding transient map. This is handy if the
+  function you are summoning `hercules' with isn't actually a
+  mode, or is fighting for keybindings with other
+  minor-modes. The keymap stops taking precedence over other
+  keymaps once a key outside of it is pressed. See
+  `set-transient-map' for details. To take advantage of this
+  capability, it isn't enough to call `hercules-def'. You should
   bind its return value (a symbol) to the key you plan to use to
   enter the PSEUDO-MODE. E.g.:
 
@@ -160,9 +170,8 @@ Now to the slightly less obvious ones:
 #+END_SRC
  
 - PSEUDO-MODE-FUN :: The command to call when entering
-  PSEUDO-MODE. Useful when the function in question is an actual
-  mode. You can omit it if you just want to set up the hydra without
-  actually doing anything right away.
+  PSEUDO-MODE.  You can omit it if you just want to summon
+  `hercules' without actually doing anything right away.
 "
   (let ((keymap-symbol (eval keymap)))
     (hercules--show-funs (eval show-funs) keymap-symbol)

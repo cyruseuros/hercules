@@ -6,13 +6,13 @@ An auto-magical, =which-key= based =hydra= banisher.
 ** Standalone
 In at most 7 lines of set-up code, =hercules= lets you call any group
 of related command sequentially with no prefix keys, while showing a
-handy popup to remember the bindings for those commands. It can create
+handy popup to remember the bindings for those commands. He can create
 both of these (the grouped commands, and the popup) from any
 keymap. Here's what that looks like:
 
 #+BEGIN_SRC emacs-lisp
   (hercules-def
-   :toggle-funs '(macrostep-mode)
+   :toggle-funs #'macrostep-mode
    :keymap 'macrostep-keymap
    :pseudo-mode t
    :pseudo-mode-fun #'macrostep-mode)
@@ -29,7 +29,7 @@ the bindings explicitly... Kind of like =which-key=...
 [[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
 
 Unlike =hydra=, =hercules= entry and exit points are associated with
-functions, not keys.  Its keys on the other hand are defined by
+functions, not keys.  Keys, on the other hand, are defined by
 traditional keymaps, which you can use as-is, or tweak to your liking
 using your tool of choice. =hercules= doesn't force this choice on
 you. That said, I highly recommend
@@ -87,7 +87,6 @@ should be trivial.
    :show-funs '(windresize windresize-help)
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
    :keymap 'windresize-map
-   :pseudo-mode t
    :pseudo-mode-fun #'windresize)
 #+END_SRC
 
@@ -129,13 +128,13 @@ The only userland macro you should concern yourself with is
 =hercules-def=.
 
 ** Arguments
-The following arguments define entry and exit point functions for a
-=hercules=:
+The following arguments define entry and exit point functions that
+invoke =hercules= (both lists and single functions work):
 - TOGGLE-FUNS :: Processed with =hercules--toggle-funs=.
 - SHOW-FUNS :: Processed with =hercules--show-funs=.
 - HIDE-FUNS :: Processed with =hercules--hide-funs=.
 
-Now to the slightly less obvious ones:
+Now to the slightly less obvious options:
 
 - KEYMAP :: The keymap to display in =hercules=. If it is nil, it is
   assumed that the function you are calling will result in a
@@ -180,5 +179,5 @@ Now to the slightly less obvious ones:
 #+END_SRC
  
 - PSEUDO-MODE-FUN :: The command to call when entering
-  PSEUDO-MODE. You can omit it if you just want to set up =hercules=
+  PSEUDO-MODE. You can omit it if you just want to summon =hercules=
   without actually doing anything right away.
