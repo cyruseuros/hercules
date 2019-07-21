@@ -32,7 +32,10 @@ functions, not keys.  Keys, on the other hand, are defined by
 traditional keymaps, which you can use as-is, or tweak to your liking
 using your tool of choice. =hercules= doesn't force this choice on
 you. That said, I highly recommend
-[[https://github.com/noctuid/general.el][general.el]].
+[[https://github.com/noctuid/general.el][general.el]] if you're out
+for completely custom pop-ups. You can just create a keymap from
+scratch and pass it to =hercules=, which =general= does extremely
+quickly without compromising flexibility.
 
 Ultimately, =hercules= saves you time by relying on work that has
 already been done for you --- usually, but not necessarily, as part of
