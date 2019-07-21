@@ -129,18 +129,21 @@ The only userland macro you should concern yourself with is
 ** Arguments
 The following arguments define entry and exit point functions that
 invoke =hercules= (both lists and single functions work):
+ 
 - TOGGLE-FUNS :: Processed with =hercules--toggle-funs=.
 - SHOW-FUNS :: Processed with =hercules--show-funs=.
 - HIDE-FUNS :: Processed with =hercules--hide-funs=.
 
-The following mutually exclusive arguments provide a shorthand
-for whittling down `hercules' pop-ups if you don't want to get
-your hands dirty with keymaps and prefer a more minimal UI (both
-lists and single keys/functions work):
-- BLACKLIST-KEYS :: Processed with =hercules--blacklist-keys=
-- WHITELIST-KEYS :: Processed with =hercules--whitelist-keys=
-- BLACKLIST-FUNS :: Processed with =hercules--graylist-funs=
-- WHITELIST-FUNS :: Processed with =hercules--graylist-funs=
+The following mutually arguments provide a shorthand for
+whittling down `hercules' pop-ups if you don't want to get your
+hands dirty with keymaps and prefer a more minimal UI (both lists
+and single keys/functions work, and whitelists take precedence
+over blacklists):
+
+- BLACKLIST-KEYS :: Processed with `hercules--graylist-after-load'
+- WHITELIST-KEYS :: Processed with `hercules--graylist-after-load'
+- BLACKLIST-FUNS :: Processed with `hercules--graylist-after-load'
+- WHITELIST-FUNS :: Processed with `hercules--graylist-after-load'
 
 Now to the slightly less obvious options:
 

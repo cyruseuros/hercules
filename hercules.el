@@ -106,46 +106,36 @@ disabled."
                        (apply-partially
                         #'hercules--toggle keymap))))
 
-(defun hercules--blacklist-keys (keys keymap)
-  "Unbind KEYS from KEYMAP.
-KEYS will be parsed by `bind-key'."
-  (let ((keymap (eval keymap))
-        (keys (eval keys)))
-    (cl-loop for key in (hercules--enlist keys) do
-             (define-key keymap key nil))))
-
-(defun hercules--whitelist-keys (keys keymap)
-  "Unbind all keys except KEYS from KEYMAP.
-KEYS will be parsed by `bind-key'."
+(defun hercules--graylist (keys funs keymap &optional whitelist)
+  "Unbind KEYS and keys bound to FUNS from KEYMAP.
+If WHITELIST is t, Unbind all keys not in KEYS or bound to FUNS
+from KEYMAP."
   (let* ((keymap (eval keymap))
          (keys (eval keys))
-         (keymap-alist
-          (cl-loop for (key . fun)
-                   in (which-key--get-keymap-bindings keymap)
-                   when (member key (hercules--enlist keys))
-                   collect (key . fun))))
+         (funs (eval funs))
+         (key-list (cl-loop for (key . fun)
+                            in (which-key--get-keymap-bindings keymap)
+                            as fun-symbol = (intern fun)
+                            when
+                            (if whitelist
+                                (not (or (member key (hercules--enlist keys))
+                                         (member fun-symbol (hercules--enlist funs))))
+                              (or (member key (hercules--enlist keys))
+                                  (member fun-symbol (hercules--enlist funs))))
+                            collect key)))
 
-    (when keymap-alist
-      (set keymap (make-keymap))
-      (cl-loop for (key . fun) in keymap-alist do
-               (define-key keymap key (intern fun))))))
+      (cl-loop for key in key-list do
+               (define-key keymap (kbd key) nil))))
 
-(defun hercules--graylist-funs (funs keymap &optional whitelist)
-  "Unbind keys (not) associated with FUNS from KEYMAP.
-The \"not\" applies when WHITELIST is t."
-  (let ((keymap (eval keymap))
-        (funs (eval funs))
-        (keymap-alist
-         (cl-loop for (key . fun)
-                  in (which-key--get-keymap-bindings keymap)
-                  when (if whitelist
-                           (member (intern fun) (hercules--enlist funs))
-                         (not (member (intern fun) (hercules--enlist funs))))
-                  collect (key . fun))))
-    (when keymap-alist
-      (set keymap (make-keymap))
-      (cl-loop for (key . fun) in keymap-alist do
-               (define-key keymap key (intern fun))))))
+(defun hercules--graylist-after-load (keys funs keymap &optional package whitelist)
+  "Call `hercules--graylist' after PACKAGE has been loaded.
+Pass KEYS, FUNS, KEYMAP, and WHITELIST directly to it.  If
+PACKAGE is nil, simply call `hecules-graylist'."
+  (let ((package (eval package)))
+    (if package
+        (with-eval-after-load package
+          (hercules--graylist keys funs keymap whitelist))
+      (hercules--graylist keys funs keymap whitelist))))
 
 ;;;###autoload
 (cl-defmacro hercules-def (&key toggle-funs
@@ -175,15 +165,16 @@ that invoke `hercules' (both lists and single functions work):
 - SHOW-FUNS :: Processed with `hercules--show-funs'.
 - HIDE-FUNS :: Processed with `hercules--hide-funs'.
 
-The following mutually exclusive arguments provide a shorthand
-for whittling down `hercules' pop-ups if you don't want to get
-your hands dirty with keymaps and prefer a more minimal UI (both
-lists and single keys/functions work):
+The following mutually arguments provide a shorthand for
+whittling down `hercules' pop-ups if you don't want to get your
+hands dirty with keymaps and prefer a more minimal UI (both lists
+and single keys/functions work, and whitelists take precedence
+over blacklists):
 
-- BLACKLIST-KEYS :: Processed with `hercules--blacklist-keys'
-- WHITELIST-KEYS :: Processed with `hercules--whitelist-keys'
-- BLACKLIST-FUNS :: Processed with `hercules--graylist-funs'
-- WHITELIST-FUNS :: Processed with `hercules--graylist-funs'
+- BLACKLIST-KEYS :: Processed with `hercules--graylist-after-load'
+- WHITELIST-KEYS :: Processed with `hercules--graylist-after-load'
+- BLACKLIST-FUNS :: Processed with `hercules--graylist-after-load'
+- WHITELIST-FUNS :: Processed with `hercules--graylist-after-load'
 
 
 Now to the slightly less obvious options:
@@ -241,26 +232,21 @@ Now to the slightly less obvious options:
   `hercules' without actually doing anything right away.
 "
   (let ((keymap-symbol (eval keymap)))
+    ;; define entry points
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
     (hercules--toggle-funs (eval toggle-funs))
-    (when (and keymap
-               (or blacklist-keys
-                   whitelist-keys
-                   blacklist-funs
-                   whitelist-funs))
-      (if package
-          (with-eval-after-load (eval package)
-            (hercules--blacklist-keys blacklist-keys keymap-symbol)
-            (hercules--whitelist-keys whitelist-keys keymap-symbol)
-            (hercules--graylist-funs blacklist-funs keymap-symbol)
-            (hercules--graylist-funs whitelist-funs keymap-symbol
-                                     t))
-        (hercules--blacklist-keys blacklist-keys keymap-symbol)
-        (hercules--whitelist-keys whitelist-keys keymap-symbol)
-        (hercules--graylist-funs blacklist-funs keymap-symbol)
-        (hercules--graylist-funs whitelist-funs keymap-symbol
-                                 t)))
+
+    ;; tweak keymaps
+    (when keymap
+      (when (or blacklist-keys blacklist-funs)
+        (hercules--graylist-after-load blacklist-keys blacklist-funs
+                                       keymap-symbol package nil))
+      (when (or whitelist-keys whitelist-funs)
+        (hercules--graylist-after-load whitelist-keys whitelist-funs
+                                       keymap-symbol package t)))
+
+    ;; create pseudo-mode
     (when (or pseudo-mode pseudo-mode-fun)
       (let* ((keymap-name (symbol-name keymap-symbol))
               (func-symbol (intern
