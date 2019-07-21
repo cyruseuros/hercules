@@ -117,24 +117,35 @@ KEYS will be parsed by `bind-key'."
 (defun hercules--whitelist-keys (keys keymap)
   "Unbind all keys except KEYS from KEYMAP.
 KEYS will be parsed by `bind-key'."
-  (let ((keymap (eval keymap))
-        (keys (eval keys)))
-    (cl-loop for (key . fun)
-             in (which-key--get-keymap-bindings keymap t) do
-             (when (not (member key (hercules--enlist keys)))
-               (define-key keymap key nil)))))
+  (let* ((keymap (eval keymap))
+         (keys (eval keys))
+         (keymap-alist
+          (cl-loop for (key . fun)
+                   in (which-key--get-keymap-bindings keymap)
+                   when (member key (hercules--enlist keys))
+                   collect (key . fun))))
+
+    (when keymap-alist
+      (set keymap (make-keymap))
+      (cl-loop for (key . fun) in keymap-alist do
+               (define-key keymap key (intern fun))))))
 
 (defun hercules--graylist-funs (funs keymap &optional whitelist)
   "Unbind keys (not) associated with FUNS from KEYMAP.
 The \"not\" applies when WHITELIST is t."
   (let ((keymap (eval keymap))
-        (funs (eval funs)))
-    (cl-loop for (key . fun)
-             in (which-key--get-keymap-bindings keymap t) do
-             (when (if whitelist
-                       (not (member (intern fun) (hercules--enlist funs)))
-                     (member (intern fun) (hercules--enlist funs)))
-               (define-key keymap key nil)))))
+        (funs (eval funs))
+        (keymap-alist
+         (cl-loop for (key . fun)
+                  in (which-key--get-keymap-bindings keymap)
+                  when (if whitelist
+                           (member (intern fun) (hercules--enlist funs))
+                         (not (member (intern fun) (hercules--enlist funs))))
+                  collect (key . fun))))
+    (when keymap-alist
+      (set keymap (make-keymap))
+      (cl-loop for (key . fun) in keymap-alist do
+               (define-key keymap key (intern fun))))))
 
 ;;;###autoload
 (cl-defmacro hercules-def (&key toggle-funs
