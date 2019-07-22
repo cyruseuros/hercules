@@ -36,43 +36,19 @@
 ;;; Code:
 (require 'which-key)
 
-(declare-function hercules--hide-popup-backup load-file-name)
-(defalias #'hercules--hide-popup-backup
-  (indirect-function #'which-key--hide-popup))
-
 (defvar hercules--popup-showing-p nil
   "Whether or not `hercules' has been summoned.")
-
-(defun hercules--disable ()
-  "Re-enable `which-key--hide-popup'.
-Add it to `pre-command-hook', and restore its original function
-definition."
-  (add-hook 'pre-command-hook #'which-key--hide-popup)
-  (defalias #'which-key--hide-popup
-    #'hercules--hide-popup-backup))
-
-(defun hercules--enable ()
-  "Disable `which-key--hide-popup'.
-Remove it from `pre-command-hook', and set its function
-definition to `ignore'.  This is necessary as `which-key' calls
-`which-key--hide-popup' in several internal calls that cannot be
-disabled."
-  (remove-hook 'pre-command-hook #'which-key--hide-popup)
-  ;; Called from helper functions I cannot disable.
-  ;; Necessary for now.
-  (defalias #'which-key--hide-popup
-    #'ignore))
 
 (defun hercules--hide (&rest _)
   "Dismiss `hercules'."
   (setq hercules--popup-showing-p nil)
-  (hercules--disable)
+  (advice-remove 'which-key--hide-popup #'ignore)
   (which-key--hide-popup))
 
 (defun hercules--show (keymap &rest _)
   "Summon `hercules' showing KEYMAP."
   (setq hercules--popup-showing-p t)
-  (hercules--enable)
+  (advice-add 'which-key--hide-popup :override #'ignore)
   (when keymap (which-key-show-keymap keymap)))
 
 (defun hercules--toggle (keymap &rest _)
