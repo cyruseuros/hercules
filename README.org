@@ -14,7 +14,7 @@ keymap. Here's what that looks like:
   (hercules-def
    :toggle-funs #'macrostep-mode
    :keymap 'macrostep-keymap
-   :pseudo-mode-fun #'macrostep-mode)
+   :transient-mode-fun #'macrostep-mode)
 #+END_SRC
 
 [[./hercules.gif]]
@@ -89,7 +89,7 @@ should be trivial.
    :show-funs '(windresize windresize-help)
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
    :keymap 'windresize-map
-   :pseudo-mode-fun #'windresize)
+   :transient-mode-fun #'windresize)
 #+END_SRC
 
 ** Bonus
@@ -110,9 +110,10 @@ like they had them, merely lacking the handy popup. These include:
   
 But =hercules= can use any keymap you have lying around. It can also
 associate it with an arbitrary function on entry. You might recognize
-this description --- It creates a pseudo-mode with a cheat-sheet
-thrown in for good measure. For example, you can steal =org-babel-map=
-and whip up what used to be a massive =hydra= in seconds:
+this description --- It creates a pseudo-mode (dubbed =transient-mode=
+for its transient keymap) with a cheat-sheet thrown in for good
+measure. For example, you can steal =org-babel-map= and whip up what
+used to be a massive =hydra= in seconds:
 
 #+BEGIN_SRC emacs-lisp
   (hercules-def
@@ -122,7 +123,7 @@ and whip up what used to be a massive =hydra= in seconds:
    ;; done with babel after
    :hide-funs '(org-babel-tangle-publish)
    :keymap 'org-babel-map
-   :pseudo-mode t)
+   :transient-mode t)
 #+END_SRC
 
 * Interface
@@ -173,7 +174,7 @@ Now to the slightly less obvious options:
   in a lazy-loaded package, you must also specify the package it
   belongs to as a quotes symbol using this argument.
 
-- PSEUDO-MODE :: Whether to create a pseudo-mode by setting a KEYMAP
+- TRANSIENT-MODE :: Whether to create a transient-mode by setting a KEYMAP
   as an overriding transient map. This is handy if the function you
   are binding =hercules= to isn't actually a mode, or is fighting for
   keybindings with other minor-modes. The keymap stops taking
@@ -181,7 +182,7 @@ Now to the slightly less obvious options:
   pressed. See =set-transient-map= for details. To take advantage of
   this capability, it isn't enough to call =hercules-def=. You should
   bind its return value (a symbol) to the key you plan to use to enter
-  the PSEUDO-MODE. E.g.:
+  the TRANSIENT-MODE. E.g.:
 
 #+BEGIN_SRC emacs-lisp
   (my:elisp::general-def
@@ -189,15 +190,15 @@ Now to the slightly less obvious options:
     "m." (hercules-def
           :toggle-funs #'macrostep-mode
           :keymap 'macrostep-keymap
-          :pseudo-mode-fun #'macrostep-mode)
+          :transient-mode-fun #'macrostep-mode)
     "me" #'macrostep-expand
     "mc" #'macrostep-collapse
     "mn" #'macrostep-next-macro
     "mp" #'macrostep-prev-macro)
 #+END_SRC
  
-- PSEUDO-MODE-FUN :: The command to call when entering
-  PSEUDO-MODE. You can omit it if you just want to summon =hercules=
+- TRANSIENT-MODE-FUN :: The command to call when entering
+  TRANSIENT-MODE. You can omit it if you just want to summon =hercules=
   without actually doing anything right away.
 
 - CONFIG :: A dummy argument the pedantic among us can use to

@@ -5,7 +5,7 @@
 ;; Author: Uros Perisic
 ;; URL: https://gitlab.com/jjzmajic/hercules
 ;;
-;; Version: 0.1
+;; Version: 0.2
 ;; Keywords: faces
 ;; Package-Requires: ((emacs "24.4") (which-key))
 
@@ -124,8 +124,8 @@ PACKAGE is nil, simply call `hecules-graylist'."
                                 show-funs
                                 hide-funs
                                 keymap
-                                pseudo-mode
-                                pseudo-mode-fun
+                                transient-mode
+                                transient-mode-fun
                                 blacklist-keys
                                 whitelist-keys
                                 whitelist-funs
@@ -186,7 +186,7 @@ Now to the slightly less obvious options:
   also specify the package it belongs to as a quotes symbol using
   this argument.
 
-- PSEUDO-MODE :: Whether to create a pseudo-mode by setting a
+- TRANSIENT-MODE :: Whether to create a transient-mode by setting a
   KEYMAP as an overriding transient map. This is handy if the
   function you are summoning Hercules with isn't actually a
   mode, or is fighting for keybindings with other
@@ -195,7 +195,7 @@ Now to the slightly less obvious options:
   `set-transient-map' for details. To take advantage of this
   capability, it isn't enough to call `hercules-def'. You should
   bind its return value (a symbol) to the key you plan to use to
-  enter the PSEUDO-MODE. E.g.:
+  enter the TRANSIENT-MODE. E.g.:
 
 #+BEGIN_SRC emacs-lisp
   (my:elisp::general-def
@@ -203,15 +203,15 @@ Now to the slightly less obvious options:
     \"m.\" (hercules-def
           :toggle-funs '(macrostep-mode)
           :keymap 'macrostep-keymap
-          :pseudo-mode-fun #'macrostep-mode)
+          :transient-mode-fun #'macrostep-mode)
     \"me\" #'macrostep-expand
     \"mc\" #'macrostep-collapse
     \"mn\" #'macrostep-next-macro
     \"mp\" #'macrostep-prev-macro)
 #+END_SRC
 
-- PSEUDO-MODE-FUN :: The command to call when entering
-  PSEUDO-MODE.  You can omit it if you just want to summon
+- TRANSIENT-MODE-FUN :: The command to call when entering
+  TRANSIENT-MODE.  You can omit it if you just want to summon
   Hercules without actually doing anything right away.
 
 - CONFIG :: A dummy argument the pedantic among us can use to
@@ -253,14 +253,14 @@ Now to the slightly less obvious options:
     ;; user config
     (eval config)
 
-    ;; create pseudo-mode
-    (when (or pseudo-mode pseudo-mode-fun)
+    ;; create transient-mode
+    (when (or transient-mode transient-mode-fun)
       (let* ((keymap-name (symbol-name keymap-symbol))
               (func-symbol (intern
-                            (format "hercules-%s-pseudo-mode"
+                            (format "hercules-%s-transient-mode"
                                     keymap-name)))
               (func-doc (format
-                        (concat "Pseudo-mode for %s.\n"
+                        (concat "transient-mode for %s.\n"
                                 "Defined by `hercules-def'.")
                                 keymap-name)))
         (hercules--show-funs `(,func-symbol) keymap-symbol)
@@ -268,8 +268,8 @@ Now to the slightly less obvious options:
             (defun ,func-symbol ()
               ,func-doc
               (interactive)
-              ,(when pseudo-mode-fun
-                 `(,(eval pseudo-mode-fun)))
+              ,(when transient-mode-fun
+                 `(,(eval transient-mode-fun)))
               (set-transient-map ,keymap-symbol t #'hercules--hide))
             ',func-symbol)))))
 
