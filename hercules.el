@@ -110,22 +110,29 @@ disabled."
   "Unbind KEYS and keys bound to FUNS from KEYMAP.
 If WHITELIST is t, Unbind all keys not in KEYS or bound to FUNS
 from KEYMAP."
-  (let* ((keymap (eval keymap))
-         (keys (eval keys))
-         (funs (eval funs))
-         (key-list (cl-loop for (key . fun)
-                            in (which-key--get-keymap-bindings keymap)
-                            as fun-symbol = (intern fun)
-                            when
-                            (if whitelist
-                                (not (or (member key (hercules--enlist keys))
-                                         (member fun-symbol (hercules--enlist funs))))
-                              (or (member key (hercules--enlist keys))
-                                  (member fun-symbol (hercules--enlist funs))))
-                            collect key)))
+  (let* ((keymap-val (eval keymap))
+         (keys-val (eval keys))
+         (funs-val (eval funs))
+         (keymap-alist
+          (cl-loop for (key . fun)
+                   in (which-key--get-keymap-bindings keymap-val)
+                   as fun-symbol = (intern fun)
+                   when
+                   (if whitelist
+                       (not (or (member key (hercules--enlist keys-val))
+                                (member fun-symbol (hercules--enlist funs-val))))
+                     (or (member key (hercules--enlist keys-val))
+                         (member fun-symbol (hercules--enlist funs-val))))
+                   collect (cons key fun-symbol))))
 
-      (cl-loop for key in key-list do
-               (define-key keymap (kbd key) nil))))
+    (if whitelist
+        (progn
+          (set keymap
+               (make-keymap))
+          (cl-loop for (key . fun-symbol) in keymap-alist do
+                   (define-key keymap (kbd key) fun-symbol)))
+      (cl-loop for (key . fun-symbol) in keymap-alist do
+               (define-key keymap (kbd key) nil)))))
 
 (defun hercules--graylist-after-load (keys funs keymap &optional package whitelist)
   "Call `hercules--graylist' after PACKAGE has been loaded.
