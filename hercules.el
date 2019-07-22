@@ -103,12 +103,11 @@ from KEYMAP."
 
     (if whitelist
         (progn
-          (set keymap
-               (make-keymap))
+          (set keymap (make-keymap))
           (cl-loop for (key . fun-symbol) in keymap-alist do
-                   (define-key keymap (kbd key) fun-symbol)))
+                   (define-key keymap-val (kbd key) fun-symbol)))
       (cl-loop for (key . fun-symbol) in keymap-alist do
-               (define-key keymap (kbd key) nil)))))
+               (define-key keymap-val (kbd key) nil)))))
 
 (defun hercules--graylist-after-load (keys funs keymap &optional package whitelist)
   "Call `hercules--graylist' after PACKAGE has been loaded.
@@ -215,11 +214,6 @@ Now to the slightly less obvious options:
   Hercules without actually doing anything right away.
 "
   (let ((keymap-symbol (eval keymap)))
-    ;; define entry points
-    (hercules--show-funs (eval show-funs) keymap-symbol)
-    (hercules--hide-funs (eval hide-funs))
-    (hercules--toggle-funs (eval toggle-funs))
-
     ;; tweak keymaps
     (when keymap
       (when (or blacklist-keys blacklist-funs)
@@ -228,6 +222,11 @@ Now to the slightly less obvious options:
       (when (or whitelist-keys whitelist-funs)
         (hercules--graylist-after-load whitelist-keys whitelist-funs
                                        keymap-symbol package t)))
+
+    ;; define entry points
+    (hercules--show-funs (eval show-funs) keymap-symbol)
+    (hercules--hide-funs (eval hide-funs))
+    (hercules--toggle-funs (eval toggle-funs))
 
     ;; create pseudo-mode
     (when (or pseudo-mode pseudo-mode-fun)
