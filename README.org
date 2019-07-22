@@ -4,8 +4,8 @@ An auto-magical, =which-key= based =hydra= banisher.
 
 * Overview
 ** Standalone
-In at most 7 lines of set-up code, =hercules= lets you call any group
-of related command sequentially with no prefix keys, while showing a
+With almost no set-up code, =hercules= lets you call any group of
+related command sequentially with no prefix keys, while showing a
 handy popup to remember the bindings for those commands. He can create
 both of these (the grouped commands, and the popup) from any
 keymap. Here's what that looks like:

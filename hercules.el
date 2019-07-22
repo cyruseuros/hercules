@@ -1,4 +1,4 @@
-;;; hercules.el --- An auto-magical, `which-key'-based `hydra' banisher. -*- lexical-binding: t; -*-
+;;; hercules.el --- An auto-magical, which-key-based hydra banisher. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 Uros Perisic
 
@@ -25,34 +25,34 @@
 ;; This file is not part of Emacs.
 
 ;;; Commentary:
-;; An auto-magical, `which-key'-based `hydra' banisher.
+;; An auto-magical, which-key-based hydra banisher.
 
-;; In at most 7 lines of set-up code, `hercules' lets you
-;; call any group of related command sequentially with no prefix keys,
-;; while showing a handy popup to remember the bindings for those
-;; commands.  It can create both of these (the grouped commands, and
-;; the popup) from any keymap.
+;; With almost no set-up code, Hercules lets you call any group of
+;; related command sequentially with no prefix keys, while showing a
+;; handy popup to remember the bindings for those commands.  It can
+;; create both of these (the grouped commands, and the popup) from any
+;; keymap.
 
 ;;; Code:
 (require 'which-key)
 
 (defvar hercules--popup-showing-p nil
-  "Whether or not `hercules' has been summoned.")
+  "Whether or not Hercules has been summoned.")
 
 (defun hercules--hide (&rest _)
-  "Dismiss `hercules'."
+  "Dismiss Hercules."
   (setq hercules--popup-showing-p nil)
   (advice-remove 'which-key--hide-popup #'ignore)
   (which-key--hide-popup))
 
 (defun hercules--show (keymap &rest _)
-  "Summon `hercules' showing KEYMAP."
+  "Summon Hercules showing KEYMAP."
   (setq hercules--popup-showing-p t)
   (advice-add 'which-key--hide-popup :override #'ignore)
   (when keymap (which-key-show-keymap keymap)))
 
 (defun hercules--toggle (keymap &rest _)
-  "Toggle `hercules' showing KEYMAP."
+  "Toggle Hercules showing KEYMAP."
   (if hercules--popup-showing-p
       (hercules--hide)
     (hercules--show keymap)))
@@ -63,20 +63,20 @@
   (if (listp exp) exp (list exp)))
 
 (defun hercules--show-funs (funs &optional keymap)
-  "Show `hercules' showing KEYMAP when FUNS are called."
+  "Show Hercules showing KEYMAP when FUNS are called."
   (cl-loop for fun in (hercules--enlist funs) do
             (advice-add fun :after
                         (apply-partially
                         #'hercules--show keymap))))
 
 (defun hercules--hide-funs (funs)
-  "Hide `hercules' when FUNS are called."
+  "Hide Hercules pop-up when FUNS are called."
   (cl-loop for fun in (hercules--enlist funs) do
             (advice-add fun :after
                         #'hercules--hide)))
 
 (defun hercules--toggle-funs (funs &optional keymap)
-  "Toggle `hercules' with KEYMAP when FUNS are called."
+  "Toggle Hercules pop-up with KEYMAP when FUNS are called."
   (cl-loop for fun in (hercules--enlist funs) do
            (advice-add fun :after
                        (apply-partially
@@ -132,24 +132,23 @@ PACKAGE is nil, simply call `hecules-graylist'."
                                 whitelist-funs
                                 blacklist-funs
                                 package)
-  "
-Summon `hercules' to banish your `hydra's.
+  " Summon Hercules to banish your hydras.
 
-In at most 7 lines of set-up code, `hercules' lets you call any
+In at most 7 lines of set-up code, Hercules lets you call any
 group of related command sequentially with no prefix keys, while
 showing a handy popup to remember the bindings for those
 commands. He can create both of these (the grouped commands, and
 the popup) from any keymap.
 
 The following arguments define entry and exit point functions
-that invoke `hercules' (both lists and single functions work):
+that invoke Hercules (both lists and single functions work):
 
 - TOGGLE-FUNS :: Processed with `hercules--toggle-funs'.
 - SHOW-FUNS :: Processed with `hercules--show-funs'.
 - HIDE-FUNS :: Processed with `hercules--hide-funs'.
 
 The following mutually arguments provide a shorthand for
-whittling down `hercules' pop-ups if you don't want to get your
+whittling down Hercules pop-ups if you don't want to get your
 hands dirty with keymaps and prefer a more minimal UI (both lists
 and single keys/functions work, and whitelists take precedence
 over blacklists):
@@ -162,17 +161,18 @@ over blacklists):
 
 Now to the slightly less obvious options:
 
-- KEYMAP :: The keymap to display in `hercules'. If it is nil, it is
-  assumed that the function you are calling will result in a
-  `which-key--show-popup' call. This might be desirable if you wish to
-  enable `hercules' for `which-key-show-top-level' or something
-  similar. For example, this is what I have in my config so I can
-  scroll to the `which-key' page of interest when I'm dealing with
-  some fringe Evil commands I kind of forgot. Then I keep it around
-  until I feel comfortable enough to kill it with
-  `keyboard-quit'. This has the side effect of killing all `hercules's
-  on `keyboard-quit', but then again all commands are supposed to obey
-  it.
+- KEYMAP :: The keymap to display in Hercules pop-ups. If it is
+  nil, it is assumed that the function you are calling will
+  result in a `which-key--show-popup' call. This might be
+  desirable if you wish to summon Hercules for
+  `which-key-show-top-level' or something similar. For example,
+  this is what I have in my config so I can scroll to the
+  which-key page of interest when I'm dealing with some fringe
+  Evil commands I kind of forgot. Then I keep it around until I
+  feel comfortable enough to kill it with `keyboard-quit'. This
+  has the side effect of killing all Hercules pop-ups on
+  `keyboard-quit', but then again all commands are supposed to
+  obey it.
 
  #+BEGIN_SRC emacs-lisp :tangle yes
    (hercules-def
@@ -188,7 +188,7 @@ Now to the slightly less obvious options:
 
 - PSEUDO-MODE :: Whether to create a pseudo-mode by setting a
   KEYMAP as an overriding transient map. This is handy if the
-  function you are summoning `hercules' with isn't actually a
+  function you are summoning Hercules with isn't actually a
   mode, or is fighting for keybindings with other
   minor-modes. The keymap stops taking precedence over other
   keymaps once a key outside of it is pressed. See
@@ -212,7 +212,7 @@ Now to the slightly less obvious options:
 
 - PSEUDO-MODE-FUN :: The command to call when entering
   PSEUDO-MODE.  You can omit it if you just want to summon
-  `hercules' without actually doing anything right away.
+  Hercules without actually doing anything right away.
 "
   (let ((keymap-symbol (eval keymap)))
     ;; define entry points
