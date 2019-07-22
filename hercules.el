@@ -130,7 +130,8 @@ PACKAGE is nil, simply call `hecules-graylist'."
                                 whitelist-keys
                                 whitelist-funs
                                 blacklist-funs
-                                package)
+                                package
+                                config)
   " Summon Hercules to banish your hydras.
 
 In at most 7 lines of set-up code, Hercules lets you call any
@@ -212,6 +213,27 @@ Now to the slightly less obvious options:
 - PSEUDO-MODE-FUN :: The command to call when entering
   PSEUDO-MODE.  You can omit it if you just want to summon
   Hercules without actually doing anything right away.
+
+- CONFIG :: A dummy argument the pedantic among us can use to
+  execute Hercules related configuration code in the same place
+  as `hercules-def'.  The most common use case will most likely
+  be to define new keymaps from scratch for complete control. For
+  example:
+
+#+BEGIN_SRC emacs-lisp
+   (hercules-def
+    :show-funs #'my-show-fun
+    :hide-funs #'my-hide-fun
+    :keymap 'my-map
+    :config (general-def
+              :prefix-map 'my-map
+              \"h\" #'my-hide-fun
+              \"s\" #'my-show-fun
+              \"m\" #'my-command-1
+              \"n\" #'my-command-2
+              ;; +++
+              ))
+#+END_SRC
 "
   (let ((keymap-symbol (eval keymap)))
     ;; tweak keymaps
@@ -227,6 +249,9 @@ Now to the slightly less obvious options:
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
     (hercules--toggle-funs (eval toggle-funs))
+
+    ;; user config
+    (eval config)
 
     ;; create pseudo-mode
     (when (or pseudo-mode pseudo-mode-fun)

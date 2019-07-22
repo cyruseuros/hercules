@@ -199,3 +199,24 @@ Now to the slightly less obvious options:
 - PSEUDO-MODE-FUN :: The command to call when entering
   PSEUDO-MODE. You can omit it if you just want to summon =hercules=
   without actually doing anything right away.
+
+- CONFIG :: A dummy argument the pedantic among us can use to
+  execute Hercules related configuration code in the same place
+  as =hercules-def=.  The most common use case will most likely
+  be to define new keymaps from scratch for complete control. For
+  example:
+
+#+BEGIN_SRC emacs-lisp
+   (hercules-def
+    :show-funs #'my-show-fun
+    :hide-funs #'my-hide-fun
+    :keymap 'my-map
+    :config (general-def
+              :prefix-map 'my-map
+              "h" #'my-hide-fun
+              "s" #'my-show-fun
+              "m" #'my-command-1
+              "n" #'my-command-2
+              ;; +++
+              ))
+#+END_SRC
