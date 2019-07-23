@@ -93,12 +93,8 @@ from KEYMAP."
           (cl-loop for (key . fun)
                    in (which-key--get-keymap-bindings keymap-val)
                    as fun-symbol = (intern fun)
-                   when
-                   (if whitelist
-                       (not (or (member key (hercules--enlist keys-val))
-                                (member fun-symbol (hercules--enlist funs-val))))
-                     (or (member key (hercules--enlist keys-val))
-                         (member fun-symbol (hercules--enlist funs-val))))
+                   when (or (member key (hercules--enlist keys-val))
+                            (member fun-symbol (hercules--enlist funs-val)))
                    collect (cons key fun-symbol))))
 
     (if whitelist
