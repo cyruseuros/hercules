@@ -125,8 +125,8 @@ can steal =org-babel-map= and whip up what used to be a massive
 Pressing any key outside the map will leave the pseudo-mode and hide
 the =hercules.el= pop-up if *TRANSIENT* is =t=. But you can also use
 the *HIDE-FUNS* and *TOGGLE-FUNS* arguments to do the same while
-executing one last Hail Mary command. Combining them like in the above
-is not a problem either.
+executing one last Hail Mary command. Combining them is not a problem
+either.
 
 Too crowded for you?
 
@@ -196,9 +196,9 @@ multiple bindings for a commands and pruning it is more efficient this
 way. Blacklists again take precedence over whitelists.
 
 *PACKAGE* must be passed along with *BLACKLIST-KEYS*,
-**WHITELIST-KEYS*, BLACKLIST-FUNS*, or *WHITELIST-FUNS* if *KEYMAP*
-*belongs to a lazy loaded package. Its contents should be the package
-*name as a quoted symbol.
+*WHITELIST-KEYS*, *BLACKLIST-FUNS*, or *WHITELIST-FUNS* if *KEYMAP*
+belongs to a lazy loaded package. Its contents should be the package
+name as a quoted symbol.
 
 Setting *TRANSIENT* to =t= allows you to get away with not setting
 *HIDE-FUNS* or *TOGGLE-FUNS* by dismissing hercules.el whenever you
