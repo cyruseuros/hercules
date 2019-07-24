@@ -102,9 +102,10 @@ from KEYMAP."
 
     (if whitelist
         (progn
-          (set keymap (make-keymap))
+          (set keymap (make-sparse-keymap))
           (cl-loop for (key . fun-symbol) in keymap-alist do
-                   (define-key keymap-val (kbd key) fun-symbol)))
+                   ;; keymap has to be evaluated again after modification
+                   (define-key (eval keymap) (kbd key) fun-symbol)))
       (cl-loop for (key . fun-symbol) in keymap-alist do
                (define-key keymap-val (kbd key) nil)))))
 
@@ -131,7 +132,7 @@ PACKAGE is nil, simply call `hecules-graylist'."
                                 blacklist-funs
                                 package
                                 config)
-  " Summon hercules.el to banish your hydras.
+  "Summon hercules.el to banish your hydras.
 
 In at most 7 lines of set-up code, hercules.el lets you call any
 group of related command sequentially with no prefix keys, while
@@ -175,7 +176,7 @@ Now to the slightly less obvious options:
 
  #+BEGIN_SRC emacs-lisp :tangle yes
    (hercules-def
-    :show-funs '(which-key-show-top-level)
+    :show-funs #'which-key-show-top-level
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC
 
@@ -253,9 +254,9 @@ Now to the slightly less obvious options:
                                        keymap-symbol package nil))
 
     ;; define entry points
+    (hercules--toggle-funs (eval toggle-funs) keymap-symbol)
     (hercules--show-funs (eval show-funs) keymap-symbol)
     (hercules--hide-funs (eval hide-funs))
-    (hercules--toggle-funs (eval toggle-funs))
 
     ;; user config
     (eval config)

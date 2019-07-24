@@ -163,7 +163,7 @@ Now to the slightly less obvious options:
   
  #+BEGIN_SRC emacs-lisp
    (hercules-def
-    :show-funs '(which-key-show-top-level)
+    :show-funs #'which-key-show-top-level
     :hide-funs '(keyboard-quit keyboard-escape-quit))
  #+END_SRC 
  
