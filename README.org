@@ -4,11 +4,11 @@ An auto-magical, =which-key= based =hydra= banisher.
 
 * Overview
 ** Standalone
-With almost no set-up code, =hercules= lets you call any group of
+With almost no set-up code, =hercules.el= lets you call any group of
 related command sequentially with no prefix keys, while showing a
-handy popup to remember the bindings for those commands. He can create
-both of these (the grouped commands, and the popup) from any
-keymap. Here's what that looks like:
+handy popup to remember the bindings for those commands. =hercules.el=
+can create both of these (the grouped commands, and the popup) from
+any keymap. Here's what that looks like:
 
 #+BEGIN_SRC emacs-lisp
   (hercules-def
@@ -23,21 +23,19 @@ keymap. Here's what that looks like:
 If only there was a way to make a =hydra= without having to list all
 the bindings explicitly... Kind of like =which-key=...
 
-=hercules= implements the functionality of
-[[https://github.com/abo-abo/hydra][hydra]] by leveraging
+=hercules.el= implements the functionality of [[https://github.com/abo-abo/hydra][hydra]] by leveraging
 [[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
 
-Unlike =hydra=, =hercules= entry and exit points are associated with
-functions, not keys.  Keys, on the other hand, are defined by
+Unlike =hydra=, =hercules.el= entry and exit points are associated
+with functions, not keys.  Keys, on the other hand, are defined by
 traditional keymaps, which you can use as-is, or tweak to your liking
-using your tool of choice. =hercules= doesn't force this choice on
-you. That said, I highly recommend
-[[https://github.com/noctuid/general.el][general.el]] if you're out
-for completely custom pop-ups. You can just create a keymap from
-scratch and pass it to =hercules=, which =general= does extremely
-quickly without compromising flexibility.
+using your tool of choice. =hercules.el= doesn't force this choice on
+you. That said, I highly recommend [[https://github.com/noctuid/general.el][general.el]] if you're out for
+completely custom pop-ups. You can just create a keymap from scratch
+and pass it to =hercules.el=, which =general= does extremely quickly
+without compromising flexibility.
 
-Ultimately, =hercules= saves you time by relying on work that has
+Ultimately, =hercules.el= saves you time by relying on work that has
 already been done for you --- usually, but not necessarily, as part of
 a time-tested minor-mode. The resulting interfaces tend to be more
 comprehensive than home-grown =hydras=, thus aiding you in
@@ -80,7 +78,7 @@ Allow me to illustrate my point using an example from =hydras= README:
   (define-key Buffer-menu-mode-map "." 'hydra-buffer-menu/body)
 #+END_SRC
 
-*** Hercules Setup
+*** hercules.el Setup
 NOTE: This is the equivalent of hydra's buffer setup applied to window
 manipulation, since I don't use buffer-menu. Implementing it yourself
 should be trivial.
@@ -93,12 +91,12 @@ should be trivial.
 #+END_SRC
 
 ** Bonus
-Last, and definitely least, =hercules= provides a more consistent
+Last, and definitely least, =hercules.el= provides a more consistent
 interface for all your keybinding popup needs (the same =which-key= UI
 throughout your config).
 
 * Motivation 
-As mentioned, I initially wrote =hercules= to avoid reinventing the
+As mentioned, I initially wrote =hercules.el= to avoid reinventing the
 wheel by creating elaborate hydras for minor-modes that already worked
 like they had them, merely lacking the handy popup. These include:
 
@@ -128,40 +126,40 @@ used to be a massive =hydra= in seconds:
 
 * Interface
 The only userland macro you should concern yourself with is
-=hercules-def=.
+=hercules-def=. As such, you should get to know it well.
 
 ** Arguments
 The following arguments define entry and exit point functions that
-invoke =hercules= (both lists and single functions work):
+invoke =hercules.el= (both lists and single functions work):
  
 - TOGGLE-FUNS :: Processed with =hercules--toggle-funs=.
 - SHOW-FUNS :: Processed with =hercules--show-funs=.
 - HIDE-FUNS :: Processed with =hercules--hide-funs=.
 
-The following mutually arguments provide a shorthand for
-whittling down `hercules' pop-ups if you don't want to get your
+The following arguments provide a shorthand for
+whittling down =hercules.el= pop-ups if you don't want to get your
 hands dirty with keymaps and prefer a more minimal UI (both lists
-and single keys/functions work, and whitelists take precedence
-over blacklists):
+and single keys/functions work, and blacklists take precedence
+over whitelists):
 
-- BLACKLIST-KEYS :: Processed with `hercules--graylist-after-load'
-- WHITELIST-KEYS :: Processed with `hercules--graylist-after-load'
-- BLACKLIST-FUNS :: Processed with `hercules--graylist-after-load'
-- WHITELIST-FUNS :: Processed with `hercules--graylist-after-load'
+- BLACKLIST-KEYS :: Processed with =hercules--graylist-after-load=.
+- WHITELIST-KEYS :: Processed with =hercules--graylist-after-load=.
+- BLACKLIST-FUNS :: Processed with =hercules--graylist-after-load=.
+- WHITELIST-FUNS :: Processed with =hercules--graylist-after-load=.
 
 Now to the slightly less obvious options:
 
-- KEYMAP :: The keymap to display in =hercules=. If it is nil, it is
-  assumed that the function you are calling will result in a
+- KEYMAP :: The keymap for =hercules.el=. If it is nil, it is assumed
+  that the function you are calling will result in a
   =which-key--show-popup= call. This might be desirable if you wish to
-  enable =hercules= for =which-key-show-top-level= or something
+  enable =hercules.el= for =which-key-show-top-level= or something
   similar. For example, this is what I have in my config so I can
   scroll to the =which-key= page of interest when I'm dealing with
   some fringe Evil commands I kind of forgot. Then I keep it around
   until I feel comfortable enough to kill it with
-  =keyboard-quit=. This has the side effect of killing any =hercules=
-  on =keyboard-quit=, but then again all commands are supposed to obey
-  it.
+  =keyboard-quit=. This has the side effect of killing any
+  =hercules.el= pop-up on =keyboard-quit=, but then again all commands
+  are supposed to obey it.
   
  #+BEGIN_SRC emacs-lisp
    (hercules-def
@@ -174,11 +172,11 @@ Now to the slightly less obvious options:
   in a lazy-loaded package, you must also specify the package it
   belongs to as a quotes symbol using this argument.
 
-- TRANSIENT-MODE :: Whether to create a transient-mode by setting a KEYMAP
-  as an overriding transient map. This is handy if the function you
-  are binding =hercules= to isn't actually a mode, or is fighting for
-  keybindings with other minor-modes. The keymap stops taking
-  precedence over other keymaps once a key outside of it is
+- TRANSIENT-MODE :: Whether to create a transient-mode by setting a
+  KEYMAP as an overriding transient map. This is handy if the function
+  you are binding =hercules.el= to isn't actually a mode, or is
+  fighting for keybindings with other minor-modes. The keymap stops
+  taking precedence over other keymaps once a key outside of it is
   pressed. See =set-transient-map= for details. To take advantage of
   this capability, it isn't enough to call =hercules-def=. You should
   bind its return value (a symbol) to the key you plan to use to enter
@@ -198,14 +196,22 @@ Now to the slightly less obvious options:
 #+END_SRC
  
 - TRANSIENT-MODE-FUN :: The command to call when entering
-  TRANSIENT-MODE. You can omit it if you just want to summon =hercules=
-  without actually doing anything right away.
+  TRANSIENT-MODE. You can omit it if you just want to summon
+  =hercules.el= without actually doing anything right away.
 
-- CONFIG :: A dummy argument the pedantic among us can use to
-  execute Hercules related configuration code in the same place
-  as =hercules-def=.  The most common use case will most likely
-  be to define new keymaps from scratch for complete control. For
-  example:
+- CONFIG :: A dummy argument the pedantic among us can use to execute
+  hercules.el related configuration code in the same place as
+  `hercules-def'.  The most common use case will most likely be to
+  tweak keymaps with more precision than the
+  =(BLACK|WHITE)LIST-(KEYS|FUNS)= arguments allow, or to define new
+  keymaps from scratch for complete control. At that point you'd
+  basically be building a hydra, but you'd still be saving effort in
+  my opinion. You could leverage the power of whichever keybinding
+  engine you prefer, and bind nested keymaps to keys without worrying
+  about =*-hydra/body= abstractions or manually specifying anything
+  beyond what you ECD (Emacs Compulsive Disorder) compels you
+  to. =hercules.el= will simply follow you where needed. Here's a
+  pseudo-example:
 
 #+BEGIN_SRC emacs-lisp
    (hercules-def
@@ -216,8 +222,8 @@ Now to the slightly less obvious options:
               :prefix-map 'my-map
               "h" #'my-hide-fun
               "s" #'my-show-fun
-              "m" #'my-command-1
-              "n" #'my-command-2
+              "m" 'my-keymap-1
+              "n" 'my-keymap-2
               ;; +++
               ))
 #+END_SRC
