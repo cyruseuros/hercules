@@ -6,7 +6,7 @@
 ;; URL: https://gitlab.com/jjzmajic/hercules
 ;;
 ;; Version: 0.2
-;; Keywords: faces
+;; Keywords: bindings
 ;; Package-Requires: ((emacs "24.4") (which-key))
 
 ;; This program is free software: you can redistribute it and/or modify it under
@@ -114,7 +114,8 @@ from KEYMAP."
       (cl-loop for (key . fun) in keymap-alist do
                (define-key (symbol-value keymap) (kbd key) nil)))))
 
-(defun hercules--graylist-after-load (keys funs keymap &optional package whitelist)
+(defun hercules--graylist-after-load (keys funs keymap &optional
+                                           package whitelist)
   "Call `hercules--graylist' after PACKAGE has been loaded.
 Pass KEYS, FUNS, KEYMAP, and WHITELIST directly to it.  If
 PACKAGE is nil, simply call `hecules-graylist'."
