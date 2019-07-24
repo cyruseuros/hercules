@@ -15,6 +15,8 @@ any keymap. Here's what that looks like:
    :toggle-funs #'macrostep-mode
    :keymap 'macrostep-keymap
    :transient-mode-fun #'macrostep-mode)
+   
+  (define-key <map> "<key>" #'macrostep-mode)
 #+END_SRC
 
 [[./hercules.gif]]
@@ -28,14 +30,11 @@ the bindings explicitly... Kind of like =which-key=...
 [[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
 
 Unlike =hydra=, =hercules.el= entry and exit points are associated
-with functions, not keys (though it can be bound to keys). Keys, on
-the other hand, are defined by traditional keymaps, which you can use
-as-is, or tweak to your liking using your tool of
-choice. =hercules.el= doesn't force this choice on you. That said, I
-highly recommend [[https://github.com/noctuid/general.el][general.el]]
-if you're out for completely custom pop-ups. You can just create a
-keymap from scratch and pass it to =hercules.el=, which =general= does
-extremely quickly without compromising flexibility.
+with functions, not keys. Keys, on the other hand, are defined by
+traditional keymaps, which you can use as-is, or tweak to your liking
+using your tool of choice. =hercules.el= doesn't force this choice on
+you. That said, I highly recommend
+[[https://github.com/noctuid/general.el][general.el]].
 
 Ultimately, =hercules.el= saves you time by relying on work that has
 already been done for you --- usually, but not necessarily, as part of
@@ -90,7 +89,7 @@ should be trivial.
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
    :keymap 'windresize-map)
    
-  (define-key my-window-map "." #'windresize)
+  (define-key <map> "<key>" #'windresize)
 #+END_SRC
 
 ** Bonus
@@ -117,18 +116,61 @@ can steal =org-babel-map= and whip up what used to be a massive
 #+BEGIN_SRC emacs-lisp
   (hercules-def
    :toggle-funs #'org-babel-mode
-   :keymap 'org-babel-map)
-
-  (define-key my-org-mode-map "." #'org-babel-mode)
+   :keymap 'org-babel-map
+   :transient t)
+   
+  (define-key <map> "<key>" #'org-babel-mode)
 #+END_SRC
 
 Pressing any key outside the map will leave the pseudo-mode and hide
-the =hercules.el= pop-up. But you can also use the
-=(hide|toggle)-funs= arguments to do the same while executing one last
-Hail Mary command.
+the =hercules.el= pop-up if *TRANSIENT* is =t=. But you can also use
+the *HIDE-FUNS* and *TOGGLE-FUNS* arguments to do the same while
+executing one last Hail Mary command. Combining them like in the above
+is not a problem either.
+
+Too crowded for you?
+
+#+BEGIN_SRC emacs-lisp
+  (hercules-def
+   :toggle-funs #'org-babel-mode
+   :keymap 'org-babel-map
+   :whitelist-keys '("n" "p" "t")
+   :transient t)
+   
+  (define-key <map> "<key>" #'org-babel-mode)
+#+END_SRC
+
+You can also use *BLACKLIST-KEYS*, *BLACKLIST-FUNS*, and
+*WHITELIST-FUNS*. to this end.
+
+What about defining =hercules.el= pop-ups from scratch? Easy. Keep in
+mind this would usually take 3 =defhydra= calls that would need to be
+explicitly connected.
+
+#+BEGIN_SRC emacs-lisp
+  (hercules-def
+   :toggle-funs #'my-random-mode
+   :keymap 'my-random-map
+   :transient t
+   :config '(general-def
+              :prefix-map 'my-random-map
+              "f" #'foo
+              "b" #'bar
+              "z" #'baz
+              "m" '(:ignore t :wk "mmap")
+              "mf" #'mfoo
+              "mb" #'mbar
+              "mz" #'mbaz
+              "n" '(:ignore t :wk "nmap")
+              "nf" #'nfoo
+              "nb" #'nbar
+              "nz" #'nbaz))
+
+  (define-key <map> "<key>" #'my-random-mode)
+#+END_SRC
 
 * Interface
-The only userland macro you should concern yourself with is
+The only userland function you should concern yourself with is
 =hercules-def=. As such, you should get to know it well.
 
 ** Arguments
@@ -165,9 +207,4 @@ press a key not *on KEYMAP.
 *CONFIG* is a quoted s-expression for the pedantic among us who would
 like to keep related configurations together. This might be useful if
 you wish to manually tweak *KEYMAP*, or even create a new one from
-scratch. This allows you to gain hydra-like control, while retaining
-the simplicity and convenience of hercules.el, as well as the raw
-power of your keybinding solution of choice. For example, hercules.el
-just works with nested prefix maps (trivially defined with
-=general-def= or =bind-keys=), so what used to be multiple =defhydra=
-calls is now a single =hercules-def= call.
+scratch.

@@ -173,14 +173,7 @@ press a key not on KEYMAP.
 CONFIG is a quoted s-expression for the pedantic among us who
 would like to keep related configurations together. This might be
 useful if you wish to manually tweak KEYMAP, or even create a new
-one from scratch. This allows you to gain hydra-like control,
-while retaining the simplicity and convenience of hercules.el, as
-well as the raw power of your keybinding solution of choice. For
-example, hercules.el just works with nested prefix
-maps (trivially defined with `general-def' or `bind-keys'), so
-what used to be multiple `defhydra's is now a single
-`hercules-def' call.
-"
+one from scratch."
   ;; tweak keymaps
   (when keymap
     (when (or whitelist-keys whitelist-funs)
