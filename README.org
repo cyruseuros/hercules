@@ -11,12 +11,10 @@ can create both of these (the grouped commands, and the popup) from
 any keymap. Here's what that looks like:
 
 #+BEGIN_SRC emacs-lisp
-  ;; `define-key' and `bind-key' also work
-  (my:elisp::general-def
-    "m." (hercules-def
-          :toggle-funs #'macrostep-mode
-          :keymap 'macrostep-keymap
-          :transient-mode-fun #'macrostep-mode))
+  (hercules-def
+   :toggle-funs #'macrostep-mode
+   :keymap 'macrostep-keymap
+   :transient-mode-fun #'macrostep-mode)
 #+END_SRC
 
 [[./hercules.gif]]
@@ -87,12 +85,12 @@ NOTE: This is the equivalent of hydra's buffer setup applied to window
 manipulation, since I don't use buffer-menu. Implementing it yourself
 should be trivial.
 #+BEGIN_SRC emacs-lisp
-  ;; using general.el here instead of `define-key'
-  (my:core::general-def
-    "w." (hercules-def
-          :hide-funs '(windresize-exit windresize-cancel-and-quit)
-          :keymap 'windresize-map
-          :transient-mode-fun #'windresize))
+  (hercules-def
+   :show-funs #'windresize
+   :hide-funs '(windresize-exit windresize-cancel-and-quit)
+   :keymap 'windresize-map)
+   
+  (define-key my-window-map "." #'windresize)
 #+END_SRC
 
 ** Bonus
@@ -111,100 +109,65 @@ like they had them, merely lacking the handy popup. These include:
 - =windresize=
 - many more
   
-But =hercules= can use any keymap you have lying around. It can also
-associate it with an arbitrary function on entry. You might recognize
-this description --- It creates a pseudo-mode (dubbed =transient-mode=
-for its transient keymap) with a cheat-sheet thrown in for good
-measure. For example, you can steal =org-babel-map= and whip up what
-used to be a massive =hydra= in seconds. Just bind the return value of
-this macro to the key you would usually bind the =*-hydra/body= to:
+But =hercules.el= can use any keymap you have lying around, even if
+there's no mode associated with it. Just make one up. For example, you
+can steal =org-babel-map= and whip up what used to be a massive
+=hydra= in seconds:
 
 #+BEGIN_SRC emacs-lisp
-  ;; again, `define-key' and `bind-key' also work
-  (my:org::general-def
-    "b." (hercules-def
-          :keymap 'org-babel-map
-          :transient-mode t))
+  (hercules-def
+   :toggle-funs #'org-babel-mode
+   :keymap 'org-babel-map)
+
+  (define-key my-org-mode-map "." #'org-babel-mode)
 #+END_SRC
 
-Pressing any key outside the map will leave the =transient-mode=. But
-you can also use the =(hide|toggle)-funs= arguments to leave the
-=transient-mode= while executing one last Hail Mary command.
+Pressing any key outside the map will leave the pseudo-mode and hide
+the =hercules.el= pop-up. But you can also use the
+=(hide|toggle)-funs= arguments to do the same while executing one last
+Hail Mary command.
 
 * Interface
 The only userland macro you should concern yourself with is
 =hercules-def=. As such, you should get to know it well.
 
 ** Arguments
-The following arguments define entry and exit point functions that
-invoke =hercules.el= (both lists and single functions work):
- 
-- TOGGLE-FUNS :: Processed with =hercules--toggle-funs=.
-- SHOW-FUNS :: Processed with =hercules--show-funs=.
-- HIDE-FUNS :: Processed with =hercules--hide-funs=.
+*TOGGLE-FUNS*, *SHOW-FUNS*, and *HIDE-FUNS* (processed by
+=hercules--graylist-after-load=) define entry and exit points for
+hercules.el to show KEYMAP. Both single functions and lists work. As
+all other arguments to =hercules-def=, these must be quoted.
 
-The following arguments provide a shorthand for
-whittling down =hercules.el= pop-ups if you don't want to get your
-hands dirty with keymaps and prefer a more minimal UI (both lists
-and single keys/functions work, and blacklists take precedence
-over whitelists):
+If *KEYMAP* is =nil=, it is assumed that one of *SHOW-FUNS* or
+*TOGGLE-FUNS* results in a =which-key--show-popup= call. This may be
+useful for functions such as =which-key-show-top-level=. I use it to
+remind myself of some obscure evil commands from time to time.
 
-- BLACKLIST-KEYS :: Processed with =hercules--graylist-after-load=.
-- WHITELIST-KEYS :: Processed with =hercules--graylist-after-load=.
-- BLACKLIST-FUNS :: Processed with =hercules--graylist-after-load=.
-- WHITELIST-FUNS :: Processed with =hercules--graylist-after-load=.
+*BLACKLIST-KEYS* and *WHITELIST-KEYS* specify which keys should
+removed from/allowed to remain on the KEYMAP passed to
+=hercules-def=. Handy if you want to unbind things in bulk and don't
+want to get your hands dirty with keymaps. Both single characters and
+lists work. Blacklists take precedence over whitelists.
 
-Now to the slightly less obvious options:
+*BLACKLIST-FUNS* and *WHITELIST-FUNS* are analogous arguments that
+operate on functions. These might be useful if a keymap specifies
+multiple bindings for a commands and pruning it is more efficient this
+way. Blacklists again take precedence over whitelists.
 
-- KEYMAP :: The keymap for =hercules.el=. If it is nil, it is assumed
-  that the function you are calling will result in a
-  =which-key--show-popup= call. This might be desirable if you wish to
-  enable =hercules.el= for =which-key-show-top-level= or something
-  similar. For example, this is what I have in my config so I can
-  scroll to the =which-key= page of interest when I'm dealing with
-  some fringe Evil commands I kind of forgot. Then I keep it around
-  until I feel comfortable enough to kill it with
-  =keyboard-quit=. This has the side effect of killing any
-  =hercules.el= pop-up on =keyboard-quit=, but then again all commands
-  are supposed to obey it.
-  
- #+BEGIN_SRC emacs-lisp
-   ;; no need to bind to any key
-   (hercules-def
-    :show-funs #'which-key-show-top-level
-    :hide-funs '(keyboard-quit keyboard-escape-quit))
- #+END_SRC 
- 
-- PACKAGE :: If you are using any of BLACKLIST-KEYS, WHITELIST-KEYS,
-  BLACKLIST-FUNS, or WHITELIST-FUNS, and the KEYMAP you're dealing is
-  in a lazy-loaded package, you must also specify the package it
-  belongs to as a quotes symbol using this argument.
+*PACKAGE* must be passed along with *BLACKLIST-KEYS*,
+**WHITELIST-KEYS*, BLACKLIST-FUNS*, or *WHITELIST-FUNS* if *KEYMAP*
+*belongs to a lazy loaded package. Its contents should be the package
+*name as a quoted symbol.
 
-- CONFIG :: A dummy argument the pedantic among us can use to execute
-  =hercules.el= related configuration code in the same place as
-  =hercules-def=.  The most common use case will most likely be to
-  tweak keymaps with more precision than the
-  =(BLACK|WHITE)LIST-(KEYS|FUNS)= arguments allow, or to define new
-  keymaps from scratch for complete control. At that point you'd
-  basically be building a hydra, but you'd still be saving effort in
-  my opinion. You could leverage the power of whichever keybinding
-  engine you prefer, and bind nested keymaps to keys without worrying
-  about =*-hydra/body= abstractions or manually specifying anything
-  beyond what you ECD (Emacs Compulsive Disorder) compels you
-  to. =hercules.el= will simply follow you where needed. Here's a
-  pseudo-example:
+Setting *TRANSIENT* to =t= allows you to get away with not setting
+*HIDE-FUNS* or *TOGGLE-FUNS* by dismissing hercules.el whenever you
+press a key not *on KEYMAP.
 
-#+BEGIN_SRC emacs-lisp
-   (hercules-def
-    :show-funs #'my-show-fun
-    :hide-funs #'my-hide-fun
-    :keymap 'my-map
-    :config (general-def
-              :prefix-map 'my-map
-              "h" #'my-hide-fun
-              "s" #'my-show-fun
-              "m" 'my-keymap-1
-              "n" 'my-keymap-2
-              ;; +++
-              ))
-#+END_SRC
+*CONFIG* is a quoted s-expression for the pedantic among us who would
+like to keep related configurations together. This might be useful if
+you wish to manually tweak *KEYMAP*, or even create a new one from
+scratch. This allows you to gain hydra-like control, while retaining
+the simplicity and convenience of hercules.el, as well as the raw
+power of your keybinding solution of choice. For example, hercules.el
+just works with nested prefix maps (trivially defined with
+=general-def= or =bind-keys=), so what used to be multiple =defhydra=
+calls is now a single =hercules-def= call.
