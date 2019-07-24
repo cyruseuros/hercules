@@ -181,11 +181,11 @@ one from scratch."
     (when (or whitelist-keys whitelist-funs)
       (hercules--graylist-after-load
        whitelist-keys whitelist-funs
-       keymap package t)))
-  (when (or blacklist-keys blacklist-funs)
-    (hercules--graylist-after-load
-     blacklist-keys blacklist-funs
-     keymap package nil))
+       keymap package t))
+    (when (or blacklist-keys blacklist-funs)
+      (hercules--graylist-after-load
+       blacklist-keys blacklist-funs
+       keymap package nil)))
   ;; define entry points
   (hercules--advise toggle-funs 'toggle keymap transient)
   (hercules--advise show-funs 'show keymap transient)
