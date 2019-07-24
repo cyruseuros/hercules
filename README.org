@@ -13,8 +13,7 @@ any keymap. Here's what that looks like:
 #+BEGIN_SRC emacs-lisp
   (hercules-def
    :toggle-funs #'macrostep-mode
-   :keymap 'macrostep-keymap
-   :transient-mode-fun #'macrostep-mode)
+   :keymap 'macrostep-keymap)
    
   (define-key <map> "<key>" #'macrostep-mode)
 #+END_SRC

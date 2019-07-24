@@ -41,14 +41,14 @@
 Used in addition to `which-key-persistent-popup' in case other
 packages start relying on it.")
 
-(defun hercules--hide (&optional keymap transient &rest _)
+(defun hercules--hide (&optional keymap &rest _)
   "Dismiss hercules.el.
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
-nil, and TRANSIENT is."
+nil."
   (setq hercules--popup-showing-p nil
         which-key-persistent-popup nil)
   (which-key--hide-popup)
-  (when (and keymap (not transient))
+  (when keymap
     (internal-pop-keymap keymap
                          'overriding-terminal-local-map)))
 
@@ -61,14 +61,14 @@ is nil.  Otherwise use `set-transient-map'."
   (when keymap
     (which-key-show-keymap keymap)
     (if transient
-        (set-transient-map (eval keymap) t #'hercules--hide)
+        (set-transient-map (symbol-value keymap) t #'hercules--hide)
       (internal-push-keymap keymap 'overriding-terminal-local-map))))
 
 (defun hercules--toggle (&optional keymap transient &rest _)
   "Toggle hercules.el showing KEYMAP.
 Pass TRANSIENT to `hercules--hide', and `hercules--show'."
   (if hercules--popup-showing-p
-      (hercules--hide keymap transient)
+      (hercules--hide keymap)
     (hercules--show keymap transient)))
 
 (defun hercules--enlist (exp)
@@ -89,7 +89,7 @@ Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
                  (pcase hst
                    ('toggle (apply-partially #'hercules--toggle keymap transient))
                    ('show (apply-partially #'hercules--show keymap transient))
-                   ('hide (apply-partially #'hercules--hide keymap transient)))))))
+                   ('hide (apply-partially #'hercules--hide keymap)))))))
 
 (defun hercules--graylist (keys funs keymap &optional whitelist)
   "Unbind KEYS and keys bound to FUNS from KEYMAP.
@@ -97,7 +97,8 @@ If WHITELIST is t, Unbind all keys not in KEYS or bound to FUNS
 from KEYMAP."
   (let ((keymap-alist
          (cl-loop for (key . fun-name)
-                  in (which-key--get-keymap-bindings keymap)
+                  in (which-key--get-keymap-bindings
+                      (symbol-value keymap))
                   as fun = (intern fun-name)
                   when
                   (or (member key (hercules--enlist keys))
@@ -108,10 +109,9 @@ from KEYMAP."
         (progn
           (set keymap (make-sparse-keymap))
           (cl-loop for (key . fun) in keymap-alist do
-                   ;; keymap has to be evaluated again after modification
-                   (define-key (eval keymap) (kbd key) fun)))
+                   (define-key (symbol-value keymap) (kbd key) fun)))
       (cl-loop for (key . fun) in keymap-alist do
-               (define-key keymap (kbd key) nil)))))
+               (define-key (symbol-value keymap) (kbd key) nil)))))
 
 (defun hercules--graylist-after-load (keys funs keymap &optional package whitelist)
   "Call `hercules--graylist' after PACKAGE has been loaded.
@@ -187,7 +187,7 @@ one from scratch."
   ;; define entry points
   (hercules--advise toggle-funs 'toggle keymap transient)
   (hercules--advise show-funs 'show keymap transient)
-  (hercules--advise hide-funs 'hide keymap transient)
+  (hercules--advise hide-funs 'hide keymap)
   ;; user config
   (eval config))
 
