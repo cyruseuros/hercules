@@ -111,18 +111,22 @@ associate it with an arbitrary function on entry. You might recognize
 this description --- It creates a pseudo-mode (dubbed =transient-mode=
 for its transient keymap) with a cheat-sheet thrown in for good
 measure. For example, you can steal =org-babel-map= and whip up what
-used to be a massive =hydra= in seconds:
+used to be a massive =hydra= in seconds. Just bind the return value of
+this macro to the key you would usually bind the =*-hydra/body= to:
 
 #+BEGIN_SRC emacs-lisp
-  (hercules-def
-   :show-funs '(org-babel-next-src-block
-                org-babel-previous-src-block)
-   ;; or whatever function you usually end up being
-   ;; done with babel after
-   :hide-funs '(org-babel-tangle-publish)
-   :keymap 'org-babel-map
-   :transient-mode t)
+  (my:org::general-def
+    "b." (hercules-def
+          :keymap 'org-babel-map
+          :transient-mode t))
 #+END_SRC
+
+Pressing any key outside the map will leave the =transient-mode=. But
+you can also use the =(hide|toggle)-funs= arguments to leave the
+=transient-mode= while executing one last Hail Mary command.
+
+Again, you can do this using =define-key=, =bind-key=, =general-def=,
+or your any other keybinding solution.
 
 * Interface
 The only userland macro you should concern yourself with is
@@ -178,7 +182,7 @@ Now to the slightly less obvious options:
   fighting for keybindings with other minor-modes. The keymap stops
   taking precedence over other keymaps once a key outside of it is
   pressed. See =set-transient-map= for details. To take advantage of
-  this capability, it isn't enough to call =hercules-def=. You should
+  this capability, *it isn't enough to call =hercules-def=.* You should
   bind its return value (a symbol) to the key you plan to use to enter
   the TRANSIENT-MODE. E.g.:
 
