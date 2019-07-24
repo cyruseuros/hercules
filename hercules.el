@@ -59,7 +59,8 @@ is nil.  Otherwise use `set-transient-map'."
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
-    (which-key-show-keymap keymap)
+    (let ((which-key-show-prefix nil))
+      (which-key-show-keymap keymap))
     (if transient
         (set-transient-map (symbol-value keymap) t #'hercules--hide)
       (internal-push-keymap keymap 'overriding-terminal-local-map))))
