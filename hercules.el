@@ -41,15 +41,16 @@
 
 (defun hercules--hide (&rest _)
   "Dismiss Hercules."
-  (setq hercules--popup-showing-p nil)
-  (advice-remove 'which-key--hide-popup #'ignore)
+  (setq hercules--popup-showing-p nil
+        which-key-persistent-popup nil)
   (which-key--hide-popup))
 
 (defun hercules--show (keymap &rest _)
   "Summon Hercules showing KEYMAP."
-  (setq hercules--popup-showing-p t)
-  (advice-add 'which-key--hide-popup :override #'ignore)
-  (when keymap (which-key-show-keymap keymap)))
+  (setq hercules--popup-showing-p t
+        which-key-persistent-popup t)
+  (when keymap
+    (which-key-show-keymap keymap)))
 
 (defun hercules--toggle (keymap &rest _)
   "Toggle Hercules showing KEYMAP."
