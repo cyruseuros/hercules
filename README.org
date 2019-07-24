@@ -11,10 +11,12 @@ can create both of these (the grouped commands, and the popup) from
 any keymap. Here's what that looks like:
 
 #+BEGIN_SRC emacs-lisp
-  (hercules-def
-   :toggle-funs #'macrostep-mode
-   :keymap 'macrostep-keymap
-   :transient-mode-fun #'macrostep-mode)
+  ;; `define-key' and `bind-key' also work
+  (my:elisp::general-def
+    "m." (hercules-def
+          :toggle-funs #'macrostep-mode
+          :keymap 'macrostep-keymap
+          :transient-mode-fun #'macrostep-mode))
 #+END_SRC
 
 [[./hercules.gif]]
@@ -23,17 +25,19 @@ any keymap. Here's what that looks like:
 If only there was a way to make a =hydra= without having to list all
 the bindings explicitly... Kind of like =which-key=...
 
-=hercules.el= implements the functionality of [[https://github.com/abo-abo/hydra][hydra]] by leveraging
+=hercules.el= implements the functionality of
+[[https://github.com/abo-abo/hydra][hydra]] by leveraging
 [[https://github.com/justbur/emacs-which-key][which-key]] auto-magic.
 
 Unlike =hydra=, =hercules.el= entry and exit points are associated
-with functions, not keys.  Keys, on the other hand, are defined by
-traditional keymaps, which you can use as-is, or tweak to your liking
-using your tool of choice. =hercules.el= doesn't force this choice on
-you. That said, I highly recommend [[https://github.com/noctuid/general.el][general.el]] if you're out for
-completely custom pop-ups. You can just create a keymap from scratch
-and pass it to =hercules.el=, which =general= does extremely quickly
-without compromising flexibility.
+with functions, not keys (though it can be bound to keys). Keys, on
+the other hand, are defined by traditional keymaps, which you can use
+as-is, or tweak to your liking using your tool of
+choice. =hercules.el= doesn't force this choice on you. That said, I
+highly recommend [[https://github.com/noctuid/general.el][general.el]]
+if you're out for completely custom pop-ups. You can just create a
+keymap from scratch and pass it to =hercules.el=, which =general= does
+extremely quickly without compromising flexibility.
 
 Ultimately, =hercules.el= saves you time by relying on work that has
 already been done for you --- usually, but not necessarily, as part of
@@ -83,11 +87,12 @@ NOTE: This is the equivalent of hydra's buffer setup applied to window
 manipulation, since I don't use buffer-menu. Implementing it yourself
 should be trivial.
 #+BEGIN_SRC emacs-lisp
-  (hercules-def
-   :show-funs '(windresize windresize-help)
-   :hide-funs '(windresize-exit windresize-cancel-and-quit)
-   :keymap 'windresize-map
-   :transient-mode-fun #'windresize)
+  ;; using general.el here instead of `define-key'
+  (my:core::general-def
+    "w." (hercules-def
+          :hide-funs '(windresize-exit windresize-cancel-and-quit)
+          :keymap 'windresize-map
+          :transient-mode-fun #'windresize))
 #+END_SRC
 
 ** Bonus
@@ -115,6 +120,7 @@ used to be a massive =hydra= in seconds. Just bind the return value of
 this macro to the key you would usually bind the =*-hydra/body= to:
 
 #+BEGIN_SRC emacs-lisp
+  ;; again, `define-key' and `bind-key' also work
   (my:org::general-def
     "b." (hercules-def
           :keymap 'org-babel-map
@@ -124,9 +130,6 @@ this macro to the key you would usually bind the =*-hydra/body= to:
 Pressing any key outside the map will leave the =transient-mode=. But
 you can also use the =(hide|toggle)-funs= arguments to leave the
 =transient-mode= while executing one last Hail Mary command.
-
-Again, you can do this using =define-key=, =bind-key=, =general-def=,
-or your any other keybinding solution.
 
 * Interface
 The only userland macro you should concern yourself with is
@@ -166,6 +169,7 @@ Now to the slightly less obvious options:
   are supposed to obey it.
   
  #+BEGIN_SRC emacs-lisp
+   ;; no need to bind to any key
    (hercules-def
     :show-funs #'which-key-show-top-level
     :hide-funs '(keyboard-quit keyboard-escape-quit))
@@ -176,36 +180,9 @@ Now to the slightly less obvious options:
   in a lazy-loaded package, you must also specify the package it
   belongs to as a quotes symbol using this argument.
 
-- TRANSIENT-MODE :: Whether to create a transient-mode by setting a
-  KEYMAP as an overriding transient map. This is handy if the function
-  you are binding =hercules.el= to isn't actually a mode, or is
-  fighting for keybindings with other minor-modes. The keymap stops
-  taking precedence over other keymaps once a key outside of it is
-  pressed. See =set-transient-map= for details. To take advantage of
-  this capability, *it isn't enough to call =hercules-def=.* You should
-  bind its return value (a symbol) to the key you plan to use to enter
-  the TRANSIENT-MODE. E.g.:
-
-#+BEGIN_SRC emacs-lisp
-  (my:elisp::general-def
-    "m" '(:ignore t :wk "macrostep")
-    "m." (hercules-def
-          :toggle-funs #'macrostep-mode
-          :keymap 'macrostep-keymap
-          :transient-mode-fun #'macrostep-mode)
-    "me" #'macrostep-expand
-    "mc" #'macrostep-collapse
-    "mn" #'macrostep-next-macro
-    "mp" #'macrostep-prev-macro)
-#+END_SRC
- 
-- TRANSIENT-MODE-FUN :: The command to call when entering
-  TRANSIENT-MODE. You can omit it if you just want to summon
-  =hercules.el= without actually doing anything right away.
-
 - CONFIG :: A dummy argument the pedantic among us can use to execute
-  hercules.el related configuration code in the same place as
-  `hercules-def'.  The most common use case will most likely be to
+  =hercules.el= related configuration code in the same place as
+  =hercules-def=.  The most common use case will most likely be to
   tweak keymaps with more precision than the
   =(BLACK|WHITE)LIST-(KEYS|FUNS)= arguments allow, or to define new
   keymaps from scratch for complete control. At that point you'd
