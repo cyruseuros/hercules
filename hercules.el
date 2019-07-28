@@ -139,11 +139,10 @@ PACKAGE is nil, simply call `hecules-graylist'."
           config)
   "Summon hercules.el to banish your hydras.
 
-TOGGLE-FUNS, SHOW-FUNS, and HIDE-FUNS \(processed by
-`hercules--graylist-after-load'\) define entry and exit points
-for hercules.el to show KEYMAP. Both single functions and lists
-work. As all other arguments to `hercules-def', these must be
-quoted.
+TOGGLE-FUNS, SHOW-FUNS, and HIDE-FUNS define entry and exit
+points for hercules.el to show KEYMAP. Both single functions and
+lists work. As all other arguments to `hercules-def', these must
+be quoted.
 
 If KEYMAP is nil, it is assumed that one of SHOW-FUNS or
 TOGGLE-FUNS results in a `which-key--show-popup' call. This may
