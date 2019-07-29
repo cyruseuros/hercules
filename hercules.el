@@ -118,7 +118,7 @@ from KEYMAP."
                                            package whitelist)
   "Call `hercules--graylist' after PACKAGE has been loaded.
 Pass KEYS, FUNS, KEYMAP, and WHITELIST directly to it.  If
-PACKAGE is nil, simply call `hecules-graylist'."
+PACKAGE is nil, simply call `hercules--graylist'."
   (if package
       (with-eval-after-load package
         (hercules--graylist keys funs keymap whitelist))
