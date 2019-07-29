@@ -6,8 +6,8 @@
 ;; URL: https://gitlab.com/jjzmajic/hercules
 ;;
 ;; Version: 0.2
-;; Keywords: bindings
-;; Package-Requires: ((emacs "24.4") (which-key))
+;; Keywords: convenience
+;; Package-Requires: ((emacs "24.4") (which-key "3.3.2"))
 
 ;; This program is free software: you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
