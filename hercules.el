@@ -144,23 +144,25 @@ points for hercules.el to show KEYMAP. Both single functions and
 lists work. As all other arguments to `hercules-def', these must
 be quoted.
 
-If KEYMAP is nil, it is assumed that one of SHOW-FUNS or
+KEYMAP specifies the keymap for hercules.el to make a pop-up out
+of.  If KEYMAP is nil, it is assumed that one of SHOW-FUNS or
 TOGGLE-FUNS results in a `which-key--show-popup' call. This may
 be useful for functions such as `which-key-show-top-level'. I use
-it to remind myself of some obscure evil commands from time to
+it to remind myself of some obscure Evil commands from time to
 time.
 
-BLACKLIST-KEYS and WHITELIST-KEYS specify which keys should
-removed from/allowed to remain on the KEYMAP passed to
-`hercules-def'. Handy if you want to unbind things in bulk and
+BLACKLIST-KEYS and WHITELIST-KEYS specify
+which (`kbd'-interpretable) keys should removed from/allowed to
+remain on KEYMAP. Handy if you want to unbind things in bulk and
 don't want to get your hands dirty with keymaps. Both single
 characters and lists work. Blacklists take precedence over
 whitelists.
 
-BLACKLIST-FUNS and WHITELIST-FUNS are analogous arguments that
-operate on functions. These might be useful if a keymap specifies
-multiple bindings for a commands and pruning it is more efficient
-this way. Blacklists again take precedence over whitelists.
+BLACKLIST-FUNS and WHITELIST-FUNS are analogous to BLACKLIST-KEYS
+and WHITELIST-KEYS except that they operate on function
+symbols. These might be useful if a keymap specifies multiple
+bindings for a commands and pruning it is more efficient this
+way. Blacklists again take precedence over whitelists.
 
 PACKAGE must be passed along with BLACKLIST-KEYS, WHITELIST-KEYS,
 BLACKLIST-FUNS, or WHITELIST-FUNS if KEYMAP belongs to a lazy
