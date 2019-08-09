@@ -41,6 +41,15 @@
 Used in addition to `which-key-persistent-popup' in case other
 packages start relying on it.")
 
+(defvar hercules-hide-prefix-p t
+  "Whether to set `which-key-show-prefix' to nil.
+Only takes effect when showing a hercules.el pop-up.  If set to
+nil, the default value of this variable is preserved.")
+
+(defvar hercules-show-full-keymap-p nil
+  "Whether show entire keymap in hercules.el pop-ups.
+If nil, only show top-level bindings.")
+
 (defun hercules--hide (&optional keymap &rest _)
   "Dismiss hercules.el.
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
@@ -59,8 +68,11 @@ is nil.  Otherwise use `set-transient-map'."
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
-    (let ((which-key-show-prefix nil))
-      (which-key-show-keymap keymap))
+    (let ((which-key-show-prefix
+           (if hercules-hide-prefix-p nil which-key-show-prefix)))
+      (if hercules-show-full-keymap-p
+          (which-key-show-full-keymap keymap)
+        (which-key-show-keymap keymap)))
     (if transient
         (set-transient-map (symbol-value keymap) t #'hercules--hide)
       (internal-push-keymap (symbol-value keymap) 'overriding-terminal-local-map))))
