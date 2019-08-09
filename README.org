@@ -184,6 +184,10 @@ of.  If *KEYMAP* is =nil=, it is assumed that one of *SHOW-FUNS* or
 useful for functions such as =which-key-show-top-level=. I use it to
 remind myself of some obscure Evil commands from time to time.
 
+If *FULL* is t, display all bindings in *KEYMAP* using
+=which-key-show-full-keymap=. Else show only top-level bindings
+using =which-key-show-keymap=.
+
 *BLACKLIST-KEYS* and *WHITELIST-KEYS* specify which (=kbd=
 interpretable) keys should removed from/allowed to remain on
 *KEYMAP*. Handy if you want to unbind things in bulk and don't want to

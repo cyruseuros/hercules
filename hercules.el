@@ -41,14 +41,10 @@
 Used in addition to `which-key-persistent-popup' in case other
 packages start relying on it.")
 
-(defvar hercules-hide-prefix-p t
-  "Whether to set `which-key-show-prefix' to nil.
-Only takes effect when showing a hercules.el pop-up.  If set to
-nil, the default value of this variable is preserved.")
-
-(defvar hercules-show-full-keymap-p nil
-  "Whether show entire keymap in hercules.el pop-ups.
-If nil, only show top-level bindings.")
+(defvar hercules-show-prefix nil
+  "One of `which-key-show-prefix'.
+Used as value of `which-key-show-prefix' in hercules.el
+pop-ups.")
 
 (defun hercules--hide (&optional keymap &rest _)
   "Dismiss hercules.el.
@@ -61,35 +57,39 @@ nil."
     (internal-pop-keymap (symbol-value keymap)
                          'overriding-terminal-local-map)))
 
-(defun hercules--show (&optional keymap transient &rest _)
+(defun hercules--show (&optional keymap transient full &rest _)
   "Summon hercules.el showing KEYMAP.
 Push KEYMAP onto `overriding-terminal-local-map' when TRANSIENT
-is nil.  Otherwise use `set-transient-map'."
+is nil.  Otherwise use `set-transient-map'.  If FULL is t use
+`which-key-show-full-keymap' instead of `which-key-show-keymap'
+for hercules.el pop-ups."
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
-    (let ((which-key-show-prefix
-           (if hercules-hide-prefix-p nil which-key-show-prefix)))
-      (if hercules-show-full-keymap-p
+    (let ((which-key-show-prefix hercules-show-prefix))
+      (if full
           (which-key-show-full-keymap keymap)
         (which-key-show-keymap keymap)))
     (if transient
-        (set-transient-map (symbol-value keymap) t #'hercules--hide)
-      (internal-push-keymap (symbol-value keymap) 'overriding-terminal-local-map))))
+        (set-transient-map (symbol-value keymap)
+                           t #'hercules--hide)
+      (internal-push-keymap (symbol-value keymap)
+                            'overriding-terminal-local-map))))
 
-(defun hercules--toggle (&optional keymap transient &rest _)
+(defun hercules--toggle (&optional keymap transient full &rest _)
   "Toggle hercules.el showing KEYMAP.
-Pass TRANSIENT to `hercules--hide', and `hercules--show'."
+Pass TRANSIENT and FULL to `hercules--hide', and
+`hercules--show'."
   (if hercules--popup-showing-p
       (hercules--hide keymap)
-    (hercules--show keymap transient)))
+    (hercules--show keymap transient full)))
 
 (defun hercules--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
 
-(defun hercules--advise (funs hst &optional keymap transient)
+(defun hercules--advise (funs hst &optional keymap transient full)
   "Either `hide', `show' or `toggle' hercules.el depending on HST.
 Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
 `hercules--hide', `hercules--show', or `hercules--toggle'."
@@ -100,9 +100,15 @@ Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
        (fset fun (lambda () (interactive))))
      (advice-add fun :after
                  (pcase hst
-                   ('toggle (apply-partially #'hercules--toggle keymap transient))
-                   ('show (apply-partially #'hercules--show keymap transient))
-                   ('hide (apply-partially #'hercules--hide keymap)))))))
+                   ('toggle
+                    (apply-partially #'hercules--toggle
+                                     keymap transient full))
+                   ('show
+                    (apply-partially #'hercules--show
+                                     keymap transient full))
+                   ('hide
+                    (apply-partially #'hercules--hide
+                                     keymap)))))))
 
 (defun hercules--graylist (keys funs keymap &optional whitelist)
   "Unbind KEYS and keys bound to FUNS from KEYMAP.
@@ -143,6 +149,7 @@ PACKAGE is nil, simply call `hercules--graylist'."
           hide-funs
           keymap
           transient
+          full
           blacklist-keys
           whitelist-keys
           blacklist-funs
@@ -162,6 +169,10 @@ TOGGLE-FUNS results in a `which-key--show-popup' call. This may
 be useful for functions such as `which-key-show-top-level'. I use
 it to remind myself of some obscure Evil commands from time to
 time.
+
+If FULL is t, display all bindings in KEYMAP using
+`which-key-show-full-keymap'. Else show only top-level bindings
+using `which-key-show-keymap'.
 
 BLACKLIST-KEYS and WHITELIST-KEYS specify
 which (`kbd'-interpretable) keys should removed from/allowed to
@@ -200,8 +211,8 @@ one from scratch."
        blacklist-keys blacklist-funs
        keymap package nil)))
   ;; define entry points
-  (hercules--advise toggle-funs 'toggle keymap transient)
-  (hercules--advise show-funs 'show keymap transient)
+  (hercules--advise toggle-funs 'toggle keymap transient full)
+  (hercules--advise show-funs 'show keymap transient full)
   (hercules--advise hide-funs 'hide keymap)
   ;; user config
   (eval config))
