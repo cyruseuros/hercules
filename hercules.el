@@ -46,7 +46,7 @@ packages start relying on it.")
 Used as value of `which-key-show-prefix' in hercules.el
 pop-ups.")
 
-(defun hercules--hide (&optional keymap &rest _)
+(defun hercules--hide (&optional keymap flatten &rest _)
   "Dismiss hercules.el.
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
 nil."
@@ -55,9 +55,11 @@ nil."
   (which-key--hide-popup)
   (when keymap
     (internal-pop-keymap (symbol-value keymap)
-                         'overriding-terminal-local-map)))
+                         'overriding-terminal-local-map))
+  (when flatten
+    (advice-remove #'which-key--update #'ignore)))
 
-(defun hercules--show (&optional keymap transient &rest _)
+(defun hercules--show (&optional keymap flatten transient &rest _)
   "Summon hercules.el showing KEYMAP.
 Push KEYMAP onto `overriding-terminal-local-map' when TRANSIENT
 is nil.  Otherwise use `set-transient-map'."
@@ -65,26 +67,32 @@ is nil.  Otherwise use `set-transient-map'."
         which-key-persistent-popup t)
   (when keymap
     (let ((which-key-show-prefix hercules-show-prefix))
-      (which-key-show-keymap keymap t))
+      (if flatten
+          (progn
+            (which-key--show-keymap
+             (symbol-name keymap) (symbol-value keymap) nil t t)
+            (advice-add #'which-key--update :override #'ignore))
+        (which-key--show-keymap
+         (symbol-name keymap) (symbol-value keymap) nil nil t)))
     (if transient
         (set-transient-map (symbol-value keymap)
                            t #'hercules--hide)
       (internal-push-keymap (symbol-value keymap)
                             'overriding-terminal-local-map))))
 
-(defun hercules--toggle (&optional keymap transient &rest _)
+(defun hercules--toggle (&optional keymap flatten transient &rest _)
   "Toggle hercules.el showing KEYMAP.
 Pass TRANSIENT to `hercules--hide', and `hercules--show'."
   (if hercules--popup-showing-p
       (hercules--hide keymap)
-    (hercules--show keymap transient)))
+    (hercules--show keymap flatten transient)))
 
 (defun hercules--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
 
-(defun hercules--advise (funs hst &optional keymap transient)
+(defun hercules--advise (funs hst &optional keymap flatten transient)
   "Either `hide', `show' or `toggle' hercules.el depending on HST.
 Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
 `hercules--hide', `hercules--show', or `hercules--toggle'."
@@ -95,9 +103,9 @@ Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
        (fset fun (lambda () (interactive))))
      (advice-add fun :after
                  (pcase hst
-                   ('toggle (apply-partially #'hercules--toggle keymap transient))
-                   ('show (apply-partially #'hercules--show keymap transient))
-                   ('hide (apply-partially #'hercules--hide keymap)))))))
+                   ('toggle (apply-partially #'hercules--toggle keymap flatten transient))
+                   ('show (apply-partially #'hercules--show keymap flatten transient))
+                   ('hide (apply-partially #'hercules--hide keymap flatten)))))))
 
 (defun hercules--graylist (keys funs keymap &optional whitelist)
   "Unbind KEYS and keys bound to FUNS from KEYMAP.
@@ -137,6 +145,7 @@ PACKAGE is nil, simply call `hercules--graylist'."
           show-funs
           hide-funs
           keymap
+          flatten
           transient
           blacklist-keys
           whitelist-keys
@@ -195,9 +204,9 @@ one from scratch."
        blacklist-keys blacklist-funs
        keymap package nil)))
   ;; define entry points
-  (hercules--advise toggle-funs 'toggle keymap transient)
-  (hercules--advise show-funs 'show keymap transient)
-  (hercules--advise hide-funs 'hide keymap)
+  (hercules--advise toggle-funs 'toggle keymap flatten transient)
+  (hercules--advise show-funs 'show keymap flatten transient)
+  (hercules--advise hide-funs 'hide keymap flatten)
   ;; user config
   (eval config))
 
