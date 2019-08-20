@@ -168,6 +168,31 @@ explicitly connected.
   (define-key <map> "<key>" #'my-random-mode)
 #+END_SRC
 
+Want to still see the entire keymap on prefix-key press? Done.
+
+#+BEGIN_SRC emacs-lisp
+  (hercules-def
+   :toggle-funs #'my-random-mode
+   :keymap 'my-random-map
+   :flatten t
+   :transient t
+   :config '(general-def
+              :prefix-map 'my-random-map
+              "f" #'foo
+              "b" #'bar
+              "z" #'baz
+              "m" '(:ignore t :wk "mmap")
+              "mf" #'mfoo
+              "mb" #'mbar
+              "mz" #'mbaz
+              "n" '(:ignore t :wk "nmap")
+              "nf" #'nfoo
+              "nb" #'nbar
+              "nz" #'nbaz))
+
+  (define-key <map> "<key>" #'my-random-mode)
+#+END_SRC
+
 * Interface
 The only userland function you should concern yourself with is
 =hercules-def=. As such, you should get to know it well.
@@ -183,6 +208,10 @@ of.  If *KEYMAP* is =nil=, it is assumed that one of *SHOW-FUNS* or
 *TOGGLE-FUNS* results in a =which-key--show-popup= call. This may be
 useful for functions such as =which-key-show-top-level=. I use it to
 remind myself of some obscure Evil commands from time to time.
+
+*FLATTEN* displays all maps and sub-maps together, without redrawing
+on prefix-key presses. This allows for multi-key combinations in a
+single =hercules.el= buffer.
 
 *BLACKLIST-KEYS* and *WHITELIST-KEYS* specify which (=kbd=
 interpretable) keys should removed from/allowed to remain on

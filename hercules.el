@@ -49,7 +49,8 @@ pop-ups.")
 (defun hercules--hide (&optional keymap flatten &rest _)
   "Dismiss hercules.el.
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
-nil."
+nil.  If FLATTEN is t, `hercules--show' was called with the same
+argument.  Restore `which-key--update' after such a call."
   (setq hercules--popup-showing-p nil
         which-key-persistent-popup nil)
   (which-key--hide-popup)
@@ -62,7 +63,9 @@ nil."
 (defun hercules--show (&optional keymap flatten transient &rest _)
   "Summon hercules.el showing KEYMAP.
 Push KEYMAP onto `overriding-terminal-local-map' when TRANSIENT
-is nil.  Otherwise use `set-transient-map'."
+is nil.  Otherwise use `set-transient-map'.  If FLATTEN is t,
+show full keymap \(including sub-maps\), and prevent redrawing on
+prefix-key press by overriding `which-key--update'."
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
@@ -82,7 +85,8 @@ is nil.  Otherwise use `set-transient-map'."
 
 (defun hercules--toggle (&optional keymap flatten transient &rest _)
   "Toggle hercules.el showing KEYMAP.
-Pass TRANSIENT to `hercules--hide', and `hercules--show'."
+Pass TRANSIENT and FLATTEN to `hercules--hide', and
+`hercules--show'."
   (if hercules--popup-showing-p
       (hercules--hide keymap)
     (hercules--show keymap flatten transient)))
@@ -166,6 +170,10 @@ TOGGLE-FUNS results in a `which-key--show-popup' call. This may
 be useful for functions such as `which-key-show-top-level'. I use
 it to remind myself of some obscure Evil commands from time to
 time.
+
+FLATTEN displays all maps and sub-maps without redrawing on
+prefix-key presses. This allows for multi-key combinations in a
+single hercules.el buffer.
 
 BLACKLIST-KEYS and WHITELIST-KEYS specify
 which (`kbd'-interpretable) keys should removed from/allowed to
