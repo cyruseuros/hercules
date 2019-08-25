@@ -15,7 +15,7 @@ any keymap. Here's what that looks like:
    :toggle-funs #'macrostep-mode
    :keymap 'macrostep-keymap)
    
-  (define-key <map> "<key>" #'macrostep-mode)
+  (define-key <map-symbol> (kbd "<key>") #'macrostep-mode)
 #+END_SRC
 
 [[./hercules.gif]]
@@ -113,7 +113,7 @@ should be trivial.
    :hide-funs '(windresize-exit windresize-cancel-and-quit)
    :keymap 'windresize-map)
    
-  (define-key <map> "<key>" #'windresize)
+  (define-key <map-symbol> (kbd "<key>") #'windresize)
 #+END_SRC
 
 ** Bonus
@@ -143,7 +143,7 @@ can steal =org-babel-map= and whip up what used to be a massive
    :keymap 'org-babel-map
    :transient t)
    
-  (define-key <map> "<key>" #'org-babel-mode)
+  (define-key <map-symbol> (kbd "<key>") #'org-babel-mode)
 #+END_SRC
 
 Pressing any key outside the map will leave the pseudo-mode and hide
@@ -161,7 +161,7 @@ Too crowded for you?
    :whitelist-keys '("n" "p" "t")
    :transient t)
    
-  (define-key <map> "<key>" #'org-babel-mode)
+  (define-key <map-symbol> (kbd "<key>") #'org-babel-mode)
 #+END_SRC
 
 You can also use *BLACKLIST-KEYS*, *BLACKLIST-FUNS*, and
@@ -190,7 +190,7 @@ explicitly connected.
               "nb" #'nbar
               "nz" #'nbaz))
 
-  (define-key <map> "<key>" #'my-random-mode)
+  (define-key <map-symbol> (kbd "<key>") #'my-random-mode)
 #+END_SRC
 
 Want to still see the entire keymap on prefix-key press? Done.
@@ -215,7 +215,7 @@ Want to still see the entire keymap on prefix-key press? Done.
               "nb" #'nbar
               "nz" #'nbaz))
 
-  (define-key <map> "<key>" #'my-random-mode)
+  (define-key <map-symbol> (kbd "<key>") #'my-random-mode)
 #+END_SRC
 
 * Interface
