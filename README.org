@@ -20,6 +20,31 @@ any keymap. Here's what that looks like:
 
 [[./hercules.gif]]
 
+*** Value Proposition
+Say that you want to move to the next =babel= source block in an =org=
+file, and then realize you actually want to execute the one after
+that. You would need to press =C-c C-v n C-c C-v n C-c C-v e=. Quite a
+lengthy combination.
+
+But if add this you your init file:
+#+begin_src emacs-lisp :tangle yes
+  (hercules-def
+   ;; read further to see why this works
+   :toggle-funs #'org-babel-mode
+   :keymap 'org-babel-map
+   :transient t)
+ 
+  ;; tweak binding to taste
+  (define-key org-mode-map (kbd "C-c C-v") #'org-babel-mode)
+#+end_src
+
+You would only need to press =C-c C-v n n e=, and while you're doing
+so, you would get a pop-up listing all the keybindings that follow
+=C-c C-v= in case you forget. Because of the =:transient= keyword,
+once you press a key that's not in the pop-up, the =hercules.el=
+window will disappear and you will be dropped back into your regular
+bindings.
+
 ** Relative to Other Packages
 If only there was a way to make a =hydra= without having to list all
 the bindings explicitly... Kind of like =which-key=...
