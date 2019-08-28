@@ -1,3 +1,4 @@
+[[https://melpa.org/#/hercules][file:https://melpa.org/packages/hercules-badge.svg]] [[https://stable.melpa.org/#/hercules][file:https://stable.melpa.org/packages/hercules-badge.svg]]
 [[./hercules.png]]
 
 An auto-magical, =which-key= based =hydra= banisher.
