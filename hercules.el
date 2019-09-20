@@ -5,7 +5,7 @@
 ;; Author: Uros Perisic
 ;; URL: https://gitlab.com/jjzmajic/hercules
 ;;
-;; Version: 0.2
+;; Version: 0.2.1
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (which-key "3.3.2"))
 
@@ -197,10 +197,10 @@ Setting TRANSIENT to t allows you to get away with not setting
 HIDE-FUNS or TOGGLE-FUNS by dismissing hercules.el whenever you
 press a key not on KEYMAP.
 
-CONFIG is a quoted s-expression for the pedantic among us who
-would like to keep related configurations together. This might be
-useful if you wish to manually tweak KEYMAP, or even create a new
-one from scratch."
+CONFIG (to be deprecated in v0.3) is a quoted s-expression for
+the pedantic among us who would like to keep related
+configurations together. This might be useful if you wish to
+manually tweak KEYMAP, or even create a new one from scratch."
   ;; tweak keymaps
   (when keymap
     (when (or whitelist-keys whitelist-funs)
@@ -211,12 +211,16 @@ one from scratch."
       (hercules--graylist-after-load
        blacklist-keys blacklist-funs
        keymap package nil)))
+
   ;; define entry points
   (hercules--advise toggle-funs 'toggle keymap flatten transient)
   (hercules--advise show-funs 'show keymap flatten transient)
   (hercules--advise hide-funs 'hide keymap flatten)
+
   ;; user config
-  (eval config))
+  (when config
+    (message ":config will be deprecated in hercules.el v0.3.")
+    (eval config)))
 
 (provide 'hercules)
 ;;; hercules.el ends here
