@@ -216,7 +216,7 @@ manually tweak KEYMAP, or even create a new one from scratch."
   (hercules--advise toggle-funs 'toggle keymap flatten transient)
   (hercules--advise show-funs 'show keymap flatten transient)
   (hercules--advise hide-funs 'hide keymap flatten)
-  ;;
+
   ;; user config
   (when config
     (message ":config will be deprecated in hercules.el v0.3.")
