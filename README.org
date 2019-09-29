@@ -252,8 +252,3 @@ name as a quoted symbol.
 Setting *TRANSIENT* to =t= allows you to get away with not setting
 *HIDE-FUNS* or *TOGGLE-FUNS* by dismissing hercules.el whenever you
 press a key not on *KEYMAP*.
-
-*CONFIG* (to be deprecated in v0.3) is a quoted s-expression for the pedantic
-among us who would like to keep related configurations together. This might be
-useful if you wish to manually tweak *KEYMAP*, or even create a new one from
-scratch.

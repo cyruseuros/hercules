@@ -195,12 +195,7 @@ quoted symbol.
 
 Setting TRANSIENT to t allows you to get away with not setting
 HIDE-FUNS or TOGGLE-FUNS by dismissing hercules.el whenever you
-press a key not on KEYMAP.
-
-CONFIG (to be deprecated in v0.3) is a quoted s-expression for
-the pedantic among us who would like to keep related
-configurations together. This might be useful if you wish to
-manually tweak KEYMAP, or even create a new one from scratch."
+press a key not on KEYMAP."
   ;; tweak keymaps
   (when keymap
     (when (or whitelist-keys whitelist-funs)
@@ -215,12 +210,7 @@ manually tweak KEYMAP, or even create a new one from scratch."
   ;; define entry points
   (hercules--advise toggle-funs 'toggle keymap flatten transient)
   (hercules--advise show-funs 'show keymap flatten transient)
-  (hercules--advise hide-funs 'hide keymap flatten)
-
-  ;; user config
-  (when config
-    (message ":config will be deprecated in hercules.el v0.3.")
-    (eval config)))
+  (hercules--advise hide-funs 'hide keymap flatten))
 
 (provide 'hercules)
 ;;; hercules.el ends here
