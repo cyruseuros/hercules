@@ -5,7 +5,7 @@
 ;; Author: Uros Perisic
 ;; URL: https://gitlab.com/jjzmajic/hercules
 
-;; Version: 0.2.1
+;; Version: 0.3
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (which-key "3.3.2"))
 
