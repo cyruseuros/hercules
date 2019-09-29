@@ -155,8 +155,7 @@ PACKAGE is nil, simply call `hercules--graylist'."
           whitelist-keys
           blacklist-funs
           whitelist-funs
-          package
-          config)
+          package)
   "Summon hercules.el to banish your hydras.
 
 TOGGLE-FUNS, SHOW-FUNS, and HIDE-FUNS define entry and exit
