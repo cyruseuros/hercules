@@ -1,4 +1,4 @@
-;;; hercules.el --- An auto-magical, which-key-based hydra banisher. -*- lexical-binding: t; -*-
+;;; hercules.el --- An auto-magical hydra banisher. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 Uros Perisic
 
