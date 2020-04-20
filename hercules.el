@@ -105,7 +105,7 @@ Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
    (progn
      (unless (symbol-function fun)
        (fset fun (lambda () (interactive))))
-     (advice-add fun :after
+     (advice-add fun :before
                  (pcase hst
                    ('toggle (apply-partially #'hercules--toggle keymap flatten transient))
                    ('show (apply-partially #'hercules--show keymap flatten transient))
