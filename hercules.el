@@ -51,6 +51,9 @@ pop-ups.")
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
 nil.  If FLATTEN is t, `hercules--show' was called with the same
 argument.  Restore `which-key--update' after such a call."
+  (advice-remove 'read-from-minibuffer 'hercules--hide-before-minibuffer)
+  (advice-remove 'read-string #'hercules--hide-before-minibuffer)
+
   (setq hercules--popup-showing-p nil
         which-key-persistent-popup nil)
   (which-key--hide-popup)
@@ -66,6 +69,9 @@ Push KEYMAP onto `overriding-terminal-local-map' when TRANSIENT
 is nil.  Otherwise use `set-transient-map'.  If FLATTEN is t,
 show full keymap \(including sub-maps\), and prevent redrawing on
 prefix-key press by overriding `which-key--update'."
+  (setq hercules--restore-with-arguments (list keymap flatten transient))
+  (advice-add 'read-from-minibuffer :before #'hercules--hide-before-minibuffer)
+  (advice-add 'read-string :before #'hercules--hide-before-minibuffer)
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
@@ -82,6 +88,27 @@ prefix-key press by overriding `which-key--update'."
                            t #'hercules--hide)
       (internal-push-keymap (symbol-value keymap)
                             'overriding-terminal-local-map))))
+
+(defun hercules--hide-before-minibuffer (&rest _)
+  "Temporarily hide hercules.el when the minibuffer is shown.
+
+Function to be used as advice on `read-from-minibuffer'.
+See `hercules--show'"
+  (advice-remove 'read-string #'hercules--hide-before-minibuffer)
+  (advice-remove 'read-from-minibuffer #'hercules--hide-before-minibuffer)
+  (add-hook 'minibuffer-exit-hook #'hercules--restore-after-minibuffer)
+  (apply #'hercules--hide hercules--restore-with-arguments))
+
+(defvar hercules--restore-with-arguments nil)
+(defun hercules--restore-after-minibuffer ()
+  "Show hercules.el after temporarily hiding when the minibuffer is shown.
+
+Function to be used as advice on `read-from-minibuffer'.
+See `hercules--hide-before-minibuffer'"
+  (run-with-timer 0.001 nil
+                  (lambda ()
+                    (remove-hook 'minibuffer-exit-hook #'hercules--restore-after-minibuffer)
+                    (apply #'hercules--show hercules--restore-with-arguments))))
 
 (defun hercules--toggle (&optional keymap flatten transient &rest _)
   "Toggle hercules.el showing KEYMAP.
