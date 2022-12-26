@@ -121,7 +121,7 @@ or
 ")
 
 (defun hercules--remove-hooks (fun hooks)
-  "Add FUN to HOOKS.
+  "Remove FUN to HOOKS.
 
 HOOKS is a (TYPE SYM) plist. If KEY is :hook remove FUN from the hook
 SYM. If KEY is :function remove FUN as :before advice from SYM.
