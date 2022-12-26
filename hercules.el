@@ -51,6 +51,8 @@ pop-ups.")
 Pop KEYMAP from `overriding-terminal-local-map' when it is not
 nil.  If FLATTEN is t, `hercules--show' was called with the same
 argument.  Restore `which-key--update' after such a call."
+  (apply #'hercules--remove-hooks hercules--temporary-hide-hooks)
+
   (setq hercules--popup-showing-p nil
         which-key-persistent-popup nil)
   (which-key--hide-popup)
@@ -66,6 +68,8 @@ Push KEYMAP onto `overriding-terminal-local-map' when TRANSIENT
 is nil.  Otherwise use `set-transient-map'.  If FLATTEN is t,
 show full keymap \(including sub-maps\), and prevent redrawing on
 prefix-key press by overriding `which-key--update'."
+  (setq hercules--show-arguments (list keymap flatten transient))
+  (apply #'hercules--add-hooks hercules--temporary-hide-hooks)
   (setq hercules--popup-showing-p t
         which-key-persistent-popup t)
   (when keymap
@@ -82,6 +86,84 @@ prefix-key press by overriding `which-key--update'."
                            t #'hercules--hide)
       (internal-push-keymap (symbol-value keymap)
                             'overriding-terminal-local-map))))
+
+(defvar hercules--temporary-restore-hooks
+  '(hercules--restore-after-minibuffer
+     ((:hook minibuffer-exit-hook)))
+  "Hooks for showing hercules after temporarily hiding.
+
+CAR should be `hercules--restore-after-minibuffer'. CDR is a list
+of hooks (as defined by `hercules--add-hooks') for when to show
+hercules after temporarily hiding it with
+`hercules--temporary-hide-hooks'.
+
+Call by
+`(apply hercules--add-hooks hercules--temporary-hide-hooks)'
+or
+`(apply hercules--remove-hooks hercules--temporary-hide-hooks)'
+")
+
+(defvar hercules--temporary-hide-hooks
+  '(hercules--hide-before-minibuffer
+    ((:function read-string)
+     (:function read-from-minibuffer)))
+  "Hooks for temporarily hiding hercules.
+
+CAR should be hercules--hide-before-minibuffer. CDR is a list of
+hooks (as defined by `hercules--add-hooks') for when to
+temporarily hide hercules. Also see
+`hercules--temporary-restore-hooks'.
+
+Call by
+`(apply hercules--add-hooks hercules--temporary-hide-hooks)'
+or
+`(apply hercules--remove-hooks hercules--temporary-hide-hooks)'
+")
+
+(defun hercules--remove-hooks (fun hooks)
+  "Remove FUN to HOOKS.
+
+HOOKS is a (TYPE SYM) plist. If KEY is :hook remove FUN from the hook
+SYM. If KEY is :function remove FUN as :before advice from SYM.
+"
+  (dolist (x hooks)
+    (if-let ((hook (plist-get x :hook)))
+        (remove-hook hook fun))
+    (if-let ((sym (plist-get x :function)))
+        (advice-remove sym fun))))
+
+(defun hercules--add-hooks (fun hooks)
+  "Add FUN to HOOKS.
+
+HOOKS is a (TYPE SYM) plist. If KEY is :hook add FUN to the hook
+SYM. If KEY is :function add FUN as :before advice to SYM.
+"
+  (dolist (x hooks)
+    (if-let ((hook (plist-get x :hook)))
+        (add-hook hook fun))
+    (if-let ((sym (plist-get x :function)))
+        (advice-add sym :before fun))))
+
+(defun hercules--hide-before-minibuffer (&rest _)
+  "Temporarily hide hercules.el when the minibuffer is shown.
+
+See `hercules--temporary-hide-hooks'"
+  (apply #'hercules--remove-hooks hercules--temporary-hide-hooks)
+  (apply #'hercules--add-hooks hercules--temporary-restore-hooks)
+  (apply #'hercules--hide hercules--show-arguments))
+
+(defvar hercules--show-arguments nil
+  "The arguments `hercules--show' was last called with.")
+(defun hercules--restore-after-minibuffer ()
+  "Show hercules.el after temporarily hiding when the minibuffer is shown.
+
+See `hercules--temporary-restore-hooks'"
+  ;; This timer is needed. Otherwise hercules will for some reason hide
+  ;; immedeately after being shown.
+  (run-with-timer 0.001 nil
+                  (lambda ()
+                    (apply #'hercules--remove-hooks hercules--temporary-restore-hooks)
+                    (apply #'hercules--show hercules--show-arguments))))
 
 (defun hercules--toggle (&optional keymap flatten transient &rest _)
   "Toggle hercules.el showing KEYMAP.
