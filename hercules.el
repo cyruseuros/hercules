@@ -88,7 +88,7 @@ prefix-key press by overriding `which-key--update'."
 Pass TRANSIENT and FLATTEN to `hercules--hide', and
 `hercules--show'."
   (if hercules--popup-showing-p
-      (hercules--hide keymap)
+      (hercules--hide keymap flatten)
     (hercules--show keymap flatten transient)))
 
 (defun hercules--enlist (exp)
